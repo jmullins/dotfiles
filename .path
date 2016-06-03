@@ -1,0 +1,4 @@
+#!/bin/bash
+export PATH=~3ps/bin:/opt/local/bin:/opt/local/sbin/:/usr/local/bin:/usr/local/sbin:$PATH
+export MANPATH=~3ps/share/man:/opt/local/share/man:/usr/local/share/man:$MANPATH
+export LD_LIBRARY_PATH=~3ps/lib:~3ps/lib64:$LD_LIBRARY_PATH

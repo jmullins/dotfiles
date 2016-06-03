@@ -1,3 +1,4 @@
+# readline configuration
 set editing-mode vi
 set prefer-visible-bell
 set visible-stats on
