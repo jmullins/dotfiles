@@ -58,7 +58,7 @@ PS1+="\[${green}\]\w"; # working directory
 
 # new line to work around readline bug with history
 # search in vi-mode https://bugs.launchpad.net/ubuntu/+source/bash/+bug/721982
-PS1+="\[\n\]";
+PS1+="\n";
 PS1+="\[${white}\] \$ \[${reset}\]"; # `$` (and reset color)
 export PS1;
 
