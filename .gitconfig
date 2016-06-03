@@ -12,7 +12,7 @@
     lg = log --color --decorate --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an (%G?)>%Creset' --abbrev-commit
 
 [commit]
-#    gpgsign = true
+    #gpgsign = true
 
 [credential]
 	helper = cache --timeout=3600
@@ -32,6 +32,10 @@
 
 [http]
     #sslVerify = false
+
+[push]
+    # Use the Git 1.x.x default to avoid errors on machines with old Git
+    default = matching
 
 [user]
 	name = Jeffrey Mullins
