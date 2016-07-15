@@ -1,4 +1,5 @@
 # readline configuration
 set editing-mode vi
-set prefer-visible-bell
+set prefer-visible-bell on
+set colored-stats on
 set visible-stats on
