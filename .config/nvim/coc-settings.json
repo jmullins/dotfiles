@@ -1,0 +1,17 @@
+{
+    "coc.preferences.currentFunctionSymbolAutoUpdate": true,
+    "diagnostic.checkCurrentLine": true,
+    "http.proxy": "http://devproxy.bloomberg.com:82",
+    "http.proxyStrictSSL": false,
+    "java.home": "/home/jmullins31/3ps/jdk-11.0.2",
+    "java.jdt.ls.vmargs": "-noverify -Xmx4G -XX:+UseG1GC -XX:+UseStringDeduplication -Dlog.level=ALL -Djavax.net.ssl.trustStore=/home/jmullins31/cert/cacerts.jks",
+    "java.import.maven.enabled": true,
+    "java.maven.downloadSources": true,
+    "java.configuration.maven.userSettings": "/home/jmullins31/.m2/settings.jdt.xml",
+    "java.trace.server": "verbose",
+    "java.configuration.runtimes": [
+        { "name": "JavaSE-1.8", "path": "/home/jmullins31/3ps/jdk8u252-b09", "default": true }
+    ],
+    "java.implementationsCodeLens.enabled": true,
+    "java.referencesCodeLens.enabled": true
+}
