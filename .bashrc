@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # .bashrc - sourced for interactive, non-login shells
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Startup-Files.html
@@ -44,8 +43,8 @@ if [ -f ~/.exports ]; then source ~/.exports; fi
 # source ~/.aliases
 if [ -f ~/.aliases ]; then source ~/.aliases; fi
 
-# source ~/.bash_prompt
-if [ -f ~/.bash_prompt ]; then source ~/.bash_prompt; fi
+# source ~/.bash_prompt if shell is interactive
+if [ -n "$PS1" -a -f ~/.bash_prompt ]; then source ~/.bash_prompt; fi
 
-# source ~/.bash_prompt
+# source ~/.extras
 if [ -f ~/.extras ]; then source ~/.extras; fi
