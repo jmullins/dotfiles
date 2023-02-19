@@ -1,31 +1,47 @@
 [alias]
     #contributes by number of commits
-	contributors = shortlog --summary --numbered
+    contributors = shortlog --summary --numbered
 
     #diff with difftool
-	d = difftool
+    d = difftool
 
     # Color graph log view
-	graph = log --graph --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
+    graph = log --graph --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
 
-	l = log --pretty=oneline -n 20 --graph --abbrev-commit
+    l = log --pretty=oneline -n 20 --graph --abbrev-commit
     lg = log --color --decorate --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an (%G?)>%Creset' --abbrev-commit
 
 [commit]
     #gpgsign = true
 
 [credential]
-	helper = cache --timeout=3600
+    helper = cache --timeout=3600
 
 [core]
-    editor = vim
+    editor = nvim
+    pager = delta
+    excludesfile = /home/jmullins31/.gitignore
 
 [diff]
-	tool = vimdiff
+    tool = nvimdiff
+    colorMoved = default
 
 [difftool]
-	prompt = false
+    prompt = false
 
+[difftool "nvimdiff"]
+    cmd = "nvim -d \"$LOCAL\" \"$REMOTE\""
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    side-by-side = true
+    line-numbers = true
+
+[merge]
+    conflictstyle = diff3
 
 [github]
     user = jmullins
@@ -37,7 +53,10 @@
     # Use the Git 1.x.x default to avoid errors on machines with old Git
     default = matching
 
+[pull]
+    rebase = true
+
 [user]
-	name = Jeffrey Mullins
-	email = mullins.j@gmail.com
+    name = Jeffrey Mullins
+    email = mullins.j@gmail.com
     #signingkey = 2AA489EA

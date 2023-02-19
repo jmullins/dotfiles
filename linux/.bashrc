@@ -48,3 +48,6 @@ if [ -n "$PS1" -a -f ~/.bash_prompt ]; then source ~/.bash_prompt; fi
 
 # source ~/.extras
 if [ -f ~/.extras ]; then source ~/.extras; fi
+
+# source ~/.cargo/env
+if [ -f ~/.cargo/env ]; then source ~/.cargo/env; fi
