@@ -16,32 +16,36 @@ Plug 'elzr/vim-json'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-surround'
 Plug 'lewis6991/gitsigns.nvim'
+Plug 'sindrets/diffview.nvim'
 Plug 'godlygeek/tabular'
 Plug 'plasticboy/vim-markdown'
 Plug 'ellisonleao/glow.nvim', {'branch': 'main'}
 Plug 'pwntester/octo.nvim'
 Plug 'neovim/nvim-lspconfig'
-Plug 'tami5/lspsaga.nvim'
+Plug 'folke/trouble.nvim'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
+"Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
+Plug 'ray-x/lsp_signature.nvim'
 Plug 'f3fora/cmp-spell'
+Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-vsnip'
+Plug 'rafamadriz/friendly-snippets'
 Plug 'arkav/lualine-lsp-progress'
 Plug 'mfussenegger/nvim-jdtls'
 Plug 'vim-test/vim-test'
 call plug#end()
 
 
-" ==================== colors ==========================
+" ==================== colors =============================
 set termguicolors
 colorscheme moonlight
 
 
-" ==================== display type =======================
+" ==================== display =============================
 syntax on           " Enable syntax highlighting
 set nu              " Line numbers on
 set showmatch       " Show matching braces / brackets
@@ -50,9 +54,10 @@ set signcolumn=yes  " Always show sign column
 set splitright      " Split vertical windows right to the current windows
 set splitbelow      " Split horizontal windows below to the current windows
 set nofoldenable    " Disable folding
+set mouse=a         " Always enable mouse
 
 
-" ==================== formatting =========================
+" ==================== formatting ==========================
 set autoindent          " Indent at same level of the previous line
 set cindent             " Smarter indentation
 set et                  " Expand tabs to spaces
@@ -64,11 +69,11 @@ set listchars=tab:>-    " Display tabs only
 set nowrap              " Line wrapping off
 
 
-" ==================== file ===============================
+" ==================== file ================================
 set encoding=UTF-8            " Set default encoding to UTF-8
 set fileformats=unix,dos,mac  " Prefer unix EOL
 set noswapfile                " Don't use swapfile
-set nobackup		          " Don't create annoying backup files
+set nobackup                  " Don't create annoying backup files
 set nowritebackup             " Don't write to backup file before overwriting
 set autowrite                 " Automatically save before :next, :make etc.
 set autoread                  " Automatically reread changed files
@@ -104,8 +109,8 @@ wk.register({
   ["<c-l>"] = { "<cmd>nohlsearch<cr><c-l>", "Redraw / Remove Search Highlight"},
   ["<c-e>"] = { "<cmd>NvimTreeToggle<cr>", "File Tree" },
   ["<c-p>"] = { "<cmd>Telescope oldfiles<cr>", "Recent Files" },
-  ["<c-f>"] = { "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(1)<cr>", "Scroll Forward" },
-  ["<c-b>"] = { "<cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1)<cr>", "Scroll Back" },
+  ["<c-.>"] = { "<cmd>Telescope find_files cwd=~/dotfiles/nvim <cr>", "Dot Files" },
+  ["<c-i>"] = { "<cmd>Telescope find_files cwd=~/.config/nvim <cr>", "init.vim" },
   -- which key help
   ["<leader>?"] = { "<cmd>WhichKey<cr>", "WhichKey"},
   -- bufferline mappings
@@ -134,28 +139,38 @@ wk.register({
   ["<leader>gr"] = { "<Cmd>Telescope lsp_references<CR>", "References" },
   ["<leader>ge"] = { "<Cmd>Telescope diagnostics bufnr=0<CR>", "Document Diagnostics" },
   ["<leader>gE"] = { "<Cmd>Telescope diagnostics <CR>", "Workspace Diagnostics" },
-  ["gr"] = { "<Cmd>Lspsaga lsp_finder<CR>", "Find Definition / References" },
-  ["gd"] = { "<Cmd>Lspsaga preview_definition<CR>", "Preview Definition" },
-  ["gR"] = { "<Cmd>Lspsaga rename<CR>", "Rename Symbol" },
-  ["gs"] = { "<Cmd>Lspsaga signature_help<CR>", "Signature Help" },
-  ["gk"] = { "<Cmd>Lspsaga hover_doc<CR>", "Hover Doc" },
-  ["gl"] = { "<Cmd>Lspsaga show_line_diagnostics<CR>", "Line Diagnostics" },
-  -- git mappings
-  ["<leader>h"] = { name = "+git" },
+  ["<leader>gs"] = { "<Cmd>Telescope lsp_document_symbols<CR>", "Document Symbols" },
+  ["<leader>gS"] = { "<Cmd>Telescope lsp_workspace_symbols<CR>", "Workspace Symbols" },
+  ["gd"] = { "<Cmd>TroubleToggle lsp_definitions<CR>", "Toggle Definitions" },
+  ["gr"] = { "<Cmd>TroubleToggle lsp_references<CR>", "Toggle References" },
+  ["gi"] = { "<Cmd>TroubleToggle lsp_implementations<CR>", "Toggle Implementations" },
+  ["ge"] = { "<Cmd>TroubleToggle document_diagnostics<CR>", "Toggle Document Diagnostics" },
+  ["gE"] = { "<Cmd>TroubleToggle workspace_diagnostics<CR>", "Toggle Workspace Diagnostics" },
+  ["gn"] = { '<Cmd>lua require("trouble").next({skip_groups = true, jump = true})<CR>', "Next" },
+  ["gp"] = { '<Cmd>lua require("trouble").previous({skip_groups = true, jump = true})<CR>', "Previous" },
+  ["gh"] = { "<Cmd>lua vim.lsp.buf.hover()<CR>", "Code Hover" },
+  ["gs"] = { "<Cmd>lua vim.lsp.buf.signature_help()<CR>", "Code Hover" },
+
+
+  -- history mappings
+  ["<leader>h"] = { name = "+history" },
+  ["<leader>hn"] = { "<Cmd>Gitsigns next_hunk<cr>", "Diff Next Hunk" },
+  ["<leader>hp"] = { "<Cmd>Gitsigns prev_hunk<cr>", "Diff Prev Hunk" },
   ["<leader>hd"] = { "<Cmd>Gitsigns diffthis<cr>", "Diff" },
   ["<leader>hw"] = { "<Cmd>Gitsigns toggle_word_diff<cr>", "Toggle Word Diff" },
+  ["<leader>hD"] = { "<Cmd>DiffviewOpen<cr>", "Diff View" },
+  ["<leader>hh"] = { "<Cmd>DiffviewFileHistory %<cr>", "Diff View File History" },
   -- markdown mappings
   ["<leader>m"] = { name = "+markdown" },
   ["<leader>mp"] = { "<Cmd>Glow<cr>", "Markdown Preview" },
   ["<leader>mc"] = { "<Cmd>InsertToc<cr>", "Markdown Insert Table of Contents" },
   ["<leader>mC"] = { "<Cmd>Toc<cr>", "Markdown View Table of Contents" },
   ["<leader>mt"] = { "<Cmd>TableFormat<cr>", "Markdown Format Table" },
-  -- floating terminal
-  ["<C-T>"] = { "<Cmd>Lspsaga open_floaterm<CR>", "Floating Terminal" },
   -- code action mappings
   ["<leader>c"] = { name = "+code action" },
   ["<leader>cf"] = { "<cmd>lua vim.lsp.buf.formatting()<CR>", "Code Format" },
-  ["<leader>ca"] = { "<Cmd>Lspsaga code_action<CR>", "Code Action" },
+  ["<leader>ca"] = { "<Cmd>lua vim.lsp.buf.code_action()<CR>", "Code Action" },
+  ["<leader>cr"] = { "<Cmd>lua vim.lsp.buf.rename()<CR>", "Rename Symbol" },
   -- testing mappings
   ["<leader>t"] = { name = "+test" },
   ["<leader>tf"] = { "<cmd>TestFile<CR>", "Test File" },
@@ -166,14 +181,13 @@ wk.register({
 
 -- visual mode mappings
 wk.register({
-  ["<leader>ca"] = { "<Cmd>Lspsaga range_code_action<CR>", "Code Action" },
+  ["<leader>ca"] = { "<cmd>lua vim.lsp.buf.code_action()<CR>", "Code Action" },
   ["<leader>cf"] = { "<cmd>lua vim.lsp.buf.range_formatting()<CR>", "Code Format" },
 }, {
   mode = "v"
 })
 
 wk.register({
-  ["<C-T>"] = { "<Cmd>Lspsaga close_floaterm<CR>", "Close Floating Terminal" },
 }, {
   mode = "t"
 })
@@ -291,29 +305,29 @@ local function ins_right(component)
 end
 
 ins_left {
-	'lsp_progress',
-	display_components = { 'lsp_client_name', 'spinner', { 'title', 'percentage', 'message' }},
-	colors = {
-	  percentage  = colors.cyan,
-	  title  = colors.cyan,
-	  message  = colors.cyan,
-	  spinner = colors.cyan,
-	  lsp_client_name = colors.magenta,
-	  use = true,
-	},
-	separators = {
-		component = ' ',
-		progress = ' | ',
-		message = { pre = '(', post = ')'},
-		percentage = { pre = '', post = '%% ' },
-		title = { pre = '', post = ': ' },
-		lsp_client_name = { pre = '[', post = ']' },
-		spinner = { pre = '', post = '' },
-		message = { commenced = 'In Progress', completed = 'Completed' },
-	},
-	display_components = { 'lsp_client_name', 'spinner', { 'title', 'percentage', 'message' } },
-	timer = { progress_enddelay = 500, spinner = 1000, lsp_client_name_enddelay = 1000 },
-	spinner_symbols = { '🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 ' },
+    'lsp_progress',
+    display_components = { 'lsp_client_name', 'spinner', { 'title', 'percentage', 'message' }},
+    colors = {
+      percentage  = colors.cyan,
+      title  = colors.cyan,
+      message  = colors.cyan,
+      spinner = colors.cyan,
+      lsp_client_name = colors.magenta,
+      use = true,
+    },
+    separators = {
+        component = ' ',
+        progress = ' | ',
+        message = { pre = '(', post = ')'},
+        percentage = { pre = '', post = '%% ' },
+        title = { pre = '', post = ': ' },
+        lsp_client_name = { pre = '[', post = ']' },
+        spinner = { pre = '', post = '' },
+        message = { commenced = 'In Progress', completed = 'Completed' },
+    },
+    display_components = { 'lsp_client_name', 'spinner', { 'title', 'percentage', 'message' } },
+    timer = { progress_enddelay = 500, spinner = 1000, lsp_client_name_enddelay = 1000 },
+    spinner_symbols = { '🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 ' },
 }
 
 require('lualine').setup(config)
@@ -408,40 +422,108 @@ let g:vim_json_syntax_conceal = 0
 
 
 " =================== dashboard-nvim =======================
-let g:dashboard_default_executive ='telescope'
+lua << EOF
+require('dashboard').setup({
+    theme = 'hyper',
+    config = {
+      week_header = {
+       enable = true,
+      },
+      shortcut = {
+        {
+           desc = ' Find files',
+           group = 'Number',
+           action = 'Telescope find_files',
+           key = 'f'
+        },
+        {
+           desc = ' Live Grep',
+           group = 'Number',
+           action = 'Telescope live_grep',
+           key = 'g'
+        },
+        {
+           desc = ' Recent files',
+           group = 'Number',
+           action = 'Telescope oldfiles',
+           key = 'r'
+        },
+        {
+           desc = ' Dot Files',
+           group = 'Number',
+           action = 'Telescope find_files cwd=~/dotfiles',
+           key = '.'
+        },
+        {
+           desc = ' init.vim',
+           group = 'Number',
+           action = 'Telescope find_files cwd=~/.config/nvim',
+           key = 'i'
+        },
+        {
+           desc = ' Check Health',
+           group = 'Number',
+           action = 'checkhealth',
+           key = 'c'
+        },
+      },
+      packages = { enable = true },
+      project = { limit = 8, icon = 'Projects', label = '', action = 'Telescope find_files cwd=' },
+      mru = { limit = 10, icon = 'Recent Files', label = '', },
+      footer = {},
+    },
+  })
+EOF
 
-" disable the tabline in the dashboard
-autocmd FileType dashboard set showtabline=0 | autocmd WinLeave <buffer> set showtabline=2
 
-" Add a custom dashboard items for GitHub
-let g:dashboard_custom_section={
-  \ 'gh_pull_requests': {
-      \ 'description': ['  List pull requests          , o p'],
-      \ 'command': 'Octo pr list' },
-  \ 'gh_issues': {
-      \ 'description': ['  List issues                 , o i'],
-      \ 'command': 'Octo issue list' },
-  \ 'file_files': {
-      \ 'description': ['  Find files                  , f f'],
-      \ 'command': 'Telescope find_files' },
-  \ 'live_grep': {
-      \ 'description': ['  Live grep                   , f g'],
-      \ 'command': 'Telescope live_grep' },
-  \ 'book_marks': {
-      \ 'description': ['  Jump to bookmarks           , f m'],
-      \ 'command': 'DashboardJumpMarks' },
-      \ }
+" =================== nvim-treesitter  =====================
+lua << EOF
+require'nvim-treesitter.configs'.setup {
+  -- A list of parser names, or "all" (the four listed parsers should always be installed)
+  ensure_installed = { "lua", "help", "java", "vim" },
+
+  -- Install parsers synchronously (only applied to `ensure_installed`)
+  sync_install = false,
+
+  -- Automatically install missing parsers when entering buffer
+  -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+  auto_install = false,
+
+  -- List of parsers to ignore installing (for "all")
+  ignore_install = { },
+
+  ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
+  -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
+
+  highlight = {
+    enable = true,
+
+    -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
+    -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
+    -- the name of the parser)
+    -- list of language that will be disabled
+    disable = { "java"  },
+
+    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+    -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+    -- Using this option may slow down your editor, and you may see some duplicate highlights.
+    -- Instead of true it can also be a list of languages
+    additional_vim_regex_highlighting = false,
+  },
+}
+EOF
 
 
 " =================== gitsigns =============================
 lua << EOF
-require("gitsigns").setup {
+require('gitsigns').setup {
   signs = {
-    add          = {hl = 'GitSignsAdd'   , text = '+', numhl='GitSignsAddNr'   , linehl='GitSignsAddLn'},
-    change       = {hl = 'GitSignsChange', text = '~', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn'},
-    delete       = {hl = 'GitSignsDelete', text = '_', numhl='GitSignsDeleteNr', linehl='GitSignsDeleteLn'},
-    topdelete    = {hl = 'GitSignsDelete', text = '_¯', numhl='GitSignsDeleteNr', linehl='GitSignsDeleteLn'},
-    changedelete = {hl = 'GitSignsChange', text = '~_', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn'},
+    add          = { text = '+' },
+    change       = { text = '+' },
+    delete       = { text = '_' },
+    topdelete    = { text = '‾' },
+    changedelete = { text = '~' },
+    untracked    = { text = '┆' },
   },
   signcolumn = true,  -- Toggle with `:Gitsigns toggle_signs`
   numhl      = false, -- Toggle with `:Gitsigns toggle_numhl`
@@ -463,7 +545,7 @@ require("gitsigns").setup {
   sign_priority = 6,
   update_debounce = 100,
   status_formatter = nil, -- Use default
-  max_file_length = 40000,
+  max_file_length = 40000, -- Disable if file is longer than this (in lines)
   preview_config = {
     -- Options passed to nvim_open_win
     border = 'single',
@@ -475,17 +557,212 @@ require("gitsigns").setup {
   yadm = {
     enable = false
   },
-  on_attach = function(bufnr)
-      local gs = package.loaded.gitsigns
-
-      local function map(mode, l, r, opts)
-        opts = opts or {}
-        opts.buffer = bufnr
-        vim.keymap.set(mode, l, r, opts)
-      end
-  end
 }
 EOF
+
+
+" =================== diffview =============================
+lua << EOF
+local actions = require("diffview.actions")
+
+require("diffview").setup({
+  diff_binaries = false,    -- Show diffs for binaries
+  enhanced_diff_hl = false, -- See ':h diffview-config-enhanced_diff_hl'
+  git_cmd = { "git" },      -- The git executable followed by default args.
+  use_icons = true,         -- Requires nvim-web-devicons
+  show_help_hints = true,   -- Show hints for how to open the help panel
+  watch_index = true,       -- Update views and index buffers when the git index changes.
+  icons = {                 -- Only applies when use_icons is true.
+    folder_closed = "",
+    folder_open = "",
+  },
+  signs = {
+    fold_closed = "",
+    fold_open = "",
+    done = "✓",
+  },
+  view = {
+    -- Configure the layout and behavior of different types of views.
+    -- Available layouts:
+    --  'diff1_plain'
+    --    |'diff2_horizontal'
+    --    |'diff2_vertical'
+    --    |'diff3_horizontal'
+    --    |'diff3_vertical'
+    --    |'diff3_mixed'
+    --    |'diff4_mixed'
+    -- For more info, see ':h diffview-config-view.x.layout'.
+    default = {
+      -- Config for changed files, and staged files in diff views.
+      layout = "diff2_horizontal",
+      winbar_info = false,          -- See ':h diffview-config-view.x.winbar_info'
+    },
+    merge_tool = {
+      -- Config for conflicted files in diff views during a merge or rebase.
+      layout = "diff3_horizontal",
+      disable_diagnostics = true,   -- Temporarily disable diagnostics for conflict buffers while in the view.
+      winbar_info = true,           -- See ':h diffview-config-view.x.winbar_info'
+    },
+    file_history = {
+      -- Config for changed files in file history views.
+      layout = "diff2_horizontal",
+      winbar_info = false,          -- See ':h diffview-config-view.x.winbar_info'
+    },
+  },
+  file_panel = {
+    listing_style = "tree",             -- One of 'list' or 'tree'
+    tree_options = {                    -- Only applies when listing_style is 'tree'
+      flatten_dirs = true,              -- Flatten dirs that only contain one single dir
+      folder_statuses = "only_folded",  -- One of 'never', 'only_folded' or 'always'.
+    },
+    win_config = {                      -- See ':h diffview-config-win_config'
+      position = "left",
+      width = 35,
+      win_opts = {}
+    },
+  },
+  file_history_panel = {
+    log_options = {   -- See ':h diffview-config-log_options'
+      git = {
+        single_file = {
+          diff_merges = "combined",
+        },
+        multi_file = {
+          diff_merges = "first-parent",
+        },
+      },
+      hg = {
+        single_file = {},
+        multi_file = {},
+      },
+    },
+    win_config = {    -- See ':h diffview-config-win_config'
+      position = "bottom",
+      height = 16,
+      win_opts = {}
+    },
+  },
+  commit_log_panel = {
+    win_config = {   -- See ':h diffview-config-win_config'
+      win_opts = {},
+    }
+  },
+  default_args = {    -- Default args prepended to the arg-list for the listed commands
+    DiffviewOpen = {},
+    DiffviewFileHistory = {},
+  },
+  hooks = {},         -- See ':h diffview-config-hooks'
+  keymaps = {
+    disable_defaults = false, -- Disable the default keymaps
+    view = {
+      -- The `view` bindings are active in the diff buffers, only when the current
+      -- tabpage is a Diffview.
+      { "n", "<tab>",      actions.select_next_entry,          { desc = "Open the diff for the next file" } },
+      { "n", "<s-tab>",    actions.select_prev_entry,          { desc = "Open the diff for the previous file" } },
+      { "n", "gf",         actions.goto_file,                  { desc = "Open the file in a new split in the previous tabpage" } },
+      { "n", "<C-w><C-f>", actions.goto_file_split,            { desc = "Open the file in a new split" } },
+      { "n", "<C-w>gf",    actions.goto_file_tab,              { desc = "Open the file in a new tabpage" } },
+      { "n", "<leader>e",  actions.focus_files,                { desc = "Bring focus to the file panel" } },
+      { "n", "<leader>b",  actions.toggle_files,               { desc = "Toggle the file panel." } },
+      { "n", "g<C-x>",     actions.cycle_layout,               { desc = "Cycle through available layouts." } },
+      { "n", "[x",         actions.prev_conflict,              { desc = "In the merge-tool: jump to the previous conflict" } },
+      { "n", "]x",         actions.next_conflict,              { desc = "In the merge-tool: jump to the next conflict" } },
+      { "n", "<leader>co", actions.conflict_choose("ours"),    { desc = "Choose the OURS version of a conflict" } },
+      { "n", "<leader>ct", actions.conflict_choose("theirs"),  { desc = "Choose the THEIRS version of a conflict" } },
+      { "n", "<leader>cb", actions.conflict_choose("base"),    { desc = "Choose the BASE version of a conflict" } },
+      { "n", "<leader>ca", actions.conflict_choose("all"),     { desc = "Choose all the versions of a conflict" } },
+      { "n", "dx",         actions.conflict_choose("none"),    { desc = "Delete the conflict region" } },
+    },
+    diff1 = {
+      -- Mappings in single window diff layouts
+      { "n", "g?", actions.help({ "view", "diff1" }), { desc = "Open the help panel" } },
+    },
+    diff2 = {
+      -- Mappings in 2-way diff layouts
+      { "n", "g?", actions.help({ "view", "diff2" }), { desc = "Open the help panel" } },
+    },
+    diff3 = {
+      -- Mappings in 3-way diff layouts
+      { { "n", "x" }, "2do",  actions.diffget("ours"),            { desc = "Obtain the diff hunk from the OURS version of the file" } },
+      { { "n", "x" }, "3do",  actions.diffget("theirs"),          { desc = "Obtain the diff hunk from the THEIRS version of the file" } },
+      { "n",          "g?",   actions.help({ "view", "diff3" }),  { desc = "Open the help panel" } },
+    },
+    diff4 = {
+      -- Mappings in 4-way diff layouts
+      { { "n", "x" }, "1do",  actions.diffget("base"),            { desc = "Obtain the diff hunk from the BASE version of the file" } },
+      { { "n", "x" }, "2do",  actions.diffget("ours"),            { desc = "Obtain the diff hunk from the OURS version of the file" } },
+      { { "n", "x" }, "3do",  actions.diffget("theirs"),          { desc = "Obtain the diff hunk from the THEIRS version of the file" } },
+      { "n",          "g?",   actions.help({ "view", "diff4" }),  { desc = "Open the help panel" } },
+    },
+    file_panel = {
+      { "n", "j",             actions.next_entry,           { desc = "Bring the cursor to the next file entry" } },
+      { "n", "<down>",        actions.next_entry,           { desc = "Bring the cursor to the next file entry" } },
+      { "n", "k",             actions.prev_entry,           { desc = "Bring the cursor to the previous file entry." } },
+      { "n", "<up>",          actions.prev_entry,           { desc = "Bring the cursor to the previous file entry." } },
+      { "n", "<cr>",          actions.select_entry,         { desc = "Open the diff for the selected entry." } },
+      { "n", "o",             actions.select_entry,         { desc = "Open the diff for the selected entry." } },
+      { "n", "<2-LeftMouse>", actions.select_entry,         { desc = "Open the diff for the selected entry." } },
+      { "n", "-",             actions.toggle_stage_entry,   { desc = "Stage / unstage the selected entry." } },
+      { "n", "S",             actions.stage_all,            { desc = "Stage all entries." } },
+      { "n", "U",             actions.unstage_all,          { desc = "Unstage all entries." } },
+      { "n", "X",             actions.restore_entry,        { desc = "Restore entry to the state on the left side." } },
+      { "n", "L",             actions.open_commit_log,      { desc = "Open the commit log panel." } },
+      { "n", "<c-b>",         actions.scroll_view(-0.25),   { desc = "Scroll the view up" } },
+      { "n", "<c-f>",         actions.scroll_view(0.25),    { desc = "Scroll the view down" } },
+      { "n", "<tab>",         actions.select_next_entry,    { desc = "Open the diff for the next file" } },
+      { "n", "<s-tab>",       actions.select_prev_entry,    { desc = "Open the diff for the previous file" } },
+      { "n", "gf",            actions.goto_file,            { desc = "Open the file in a new split in the previous tabpage" } },
+      { "n", "<C-w><C-f>",    actions.goto_file_split,      { desc = "Open the file in a new split" } },
+      { "n", "<C-w>gf",       actions.goto_file_tab,        { desc = "Open the file in a new tabpage" } },
+      { "n", "i",             actions.listing_style,        { desc = "Toggle between 'list' and 'tree' views" } },
+      { "n", "f",             actions.toggle_flatten_dirs,  { desc = "Flatten empty subdirectories in tree listing style." } },
+      { "n", "R",             actions.refresh_files,        { desc = "Update stats and entries in the file list." } },
+      { "n", "<leader>e",     actions.focus_files,          { desc = "Bring focus to the file panel" } },
+      { "n", "<leader>b",     actions.toggle_files,         { desc = "Toggle the file panel" } },
+      { "n", "g<C-x>",        actions.cycle_layout,         { desc = "Cycle available layouts" } },
+      { "n", "[x",            actions.prev_conflict,        { desc = "Go to the previous conflict" } },
+      { "n", "]x",            actions.next_conflict,        { desc = "Go to the next conflict" } },
+      { "n", "g?",            actions.help("file_panel"),   { desc = "Open the help panel" } },
+    },
+    file_history_panel = {
+      { "n", "g!",            actions.options,                     { desc = "Open the option panel" } },
+      { "n", "<C-A-d>",       actions.open_in_diffview,            { desc = "Open the entry under the cursor in a diffview" } },
+      { "n", "y",             actions.copy_hash,                   { desc = "Copy the commit hash of the entry under the cursor" } },
+      { "n", "L",             actions.open_commit_log,             { desc = "Show commit details" } },
+      { "n", "zR",            actions.open_all_folds,              { desc = "Expand all folds" } },
+      { "n", "zM",            actions.close_all_folds,             { desc = "Collapse all folds" } },
+      { "n", "j",             actions.next_entry,                  { desc = "Bring the cursor to the next file entry" } },
+      { "n", "<down>",        actions.next_entry,                  { desc = "Bring the cursor to the next file entry" } },
+      { "n", "k",             actions.prev_entry,                  { desc = "Bring the cursor to the previous file entry." } },
+      { "n", "<up>",          actions.prev_entry,                  { desc = "Bring the cursor to the previous file entry." } },
+      { "n", "<cr>",          actions.select_entry,                { desc = "Open the diff for the selected entry." } },
+      { "n", "o",             actions.select_entry,                { desc = "Open the diff for the selected entry." } },
+      { "n", "<2-LeftMouse>", actions.select_entry,                { desc = "Open the diff for the selected entry." } },
+      { "n", "<c-b>",         actions.scroll_view(-0.25),          { desc = "Scroll the view up" } },
+      { "n", "<c-f>",         actions.scroll_view(0.25),           { desc = "Scroll the view down" } },
+      { "n", "<tab>",         actions.select_next_entry,           { desc = "Open the diff for the next file" } },
+      { "n", "<s-tab>",       actions.select_prev_entry,           { desc = "Open the diff for the previous file" } },
+      { "n", "gf",            actions.goto_file,                   { desc = "Open the file in a new split in the previous tabpage" } },
+      { "n", "<C-w><C-f>",    actions.goto_file_split,             { desc = "Open the file in a new split" } },
+      { "n", "<C-w>gf",       actions.goto_file_tab,               { desc = "Open the file in a new tabpage" } },
+      { "n", "<leader>e",     actions.focus_files,                 { desc = "Bring focus to the file panel" } },
+      { "n", "<leader>b",     actions.toggle_files,                { desc = "Toggle the file panel" } },
+      { "n", "g<C-x>",        actions.cycle_layout,                { desc = "Cycle available layouts" } },
+      { "n", "g?",            actions.help("file_history_panel"),  { desc = "Open the help panel" } },
+    },
+    option_panel = {
+      { "n", "<tab>", actions.select_entry,          { desc = "Change the current option" } },
+      { "n", "q",     actions.close,                 { desc = "Close the panel" } },
+      { "n", "g?",    actions.help("option_panel"),  { desc = "Open the help panel" } },
+    },
+    help_panel = {
+      { "n", "q",     actions.close,  { desc = "Close help menu" } },
+      { "n", "<esc>", actions.close,  { desc = "Close help menu" } },
+    },
+  },
+})
+EOF
+
 
 " =================== vim-markdown =========================
 
@@ -640,21 +917,70 @@ require"octo".setup({
 EOF
 
 
-" =================== nvim-lspconfig =======================
+" =================== lspconfig ============================
+
+
+" =================== clangd ===============================
+if executable('clangd')
 lua << EOF
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
-local servers = { 'pyright', 'rust_analyzer', 'tsserver' }
-for _, lsp in pairs(servers) do
-  require('lspconfig')[lsp].setup {
-    on_attach = on_attach,
-    flags = {
-      -- This will be the default in neovim 0.7+
-      debounce_text_changes = 150,
+require'lspconfig'.clangd.setup{}
+EOF
+else
+  echo "You might want to install clangd: https://clangd.llvm.org/installation.html"
+endif
+
+
+" =================== pyright ==============================
+if executable('pyright')
+lua << EOF
+require'lspconfig'.pyright.setup{}
+EOF
+else
+  echo "You might want to install pyright: npm install pyright"
+endif
+
+
+" =================== tsserver =============================
+if executable('tsserver')
+lua << EOF
+require'lspconfig'.tsserver.setup{}
+EOF
+else
+  echo "You might want to install tsserver: yarn global add typescript typescript-language-server"
+endif
+
+
+" =================== rust-analyzer ========================
+if executable('rust-analyzer')
+lua << EOF
+local nvim_lsp = require'lspconfig'
+
+nvim_lsp.rust_analyzer.setup({
+  -- on_attach is a callback called when the language server attachs to the buffer
+  -- on_attach = on_attach,
+  settings = {
+    -- config from: https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
+    ["rust-analyzer"] = {
+      cargo = {
+        target = "thumbv7em-none-eabihf",
+        runBuildScripts = false,
+        allFeatures = true
+      },
+      checkOnSave = {
+        enable = true,
+        target = "thumbv7em-none-eabihf",
+        allTargets = false,
+      },
+      procMacro = {
+        enable = false
+      }
     }
   }
-end
+})
 EOF
+else
+  echo "You might want to install rust-analyzer: https://rust-analyzer.github.io"
+endif
 
 
 " =================== nvim-cmp ============================
@@ -698,97 +1024,134 @@ cmp.setup ({
 
 vim.opt.spelllang = { 'en_us' }
 
-
 -- Setup lspconfig.
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 -- Enable some language servers with the additional completion capabilities offered by nvim-cmp
-local servers = { 'clangd', 'rust_analyzer', 'tsserver' }
+local servers = { 'clangd', 'pyright', 'rust_analyzer', 'tsserver' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
-    -- on_attach = my_custom_on_attach,
     capabilities = capabilities,
   }
 end
 
 EOF
 
-" =================== rust-analyzer ========================
-if executable('rust-analyzer')
+" =================== trouble.nvim =========================
 lua << EOF
-local nvim_lsp = require'lspconfig'
-
-nvim_lsp.rust_analyzer.setup({
-  -- on_attach is a callback called when the language server attachs to the buffer
-  -- on_attach = on_attach,
-  settings = {
-    -- config from: https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
-    ["rust-analyzer"] = {
-      cargo = {
-        target = "thumbv7em-none-eabihf",
-        runBuildScripts = false,
-        allFeatures = true
-      },
-      checkOnSave = {
-        enable = true,
-        target = "thumbv7em-none-eabihf",
-        allTargets = false,
-      },
-      procMacro = {
-        enable = false
-      }
-    }
-  }
-})
-EOF
-else
-  echo "You might want to install rust-analyzer: https://rust-analyzer.github.io/manual.html#rust-analyzer-language-server-binary"
-endif
-
-
-" =================== lspsaga.nvim =========================
-lua << EOF
-require'lspsaga'.init_lsp_saga{
-  use_saga_diagnostic_sign = true,
-  error_sign = '',
-  warn_sign = '',
-  hint_sign = '',
-  infor_sign = '',
-  infor_sign = '',
-  diagnostic_header_icon = '   ',
-  code_action_icon = ' ',
-  code_action_prompt = {
-    enable = true,
-    sign = true,
-    sign_priority = 20,
-    virtual_text = true,
+  require("trouble").setup {
+    position = "bottom", -- position of the list can be: bottom, top, left, right
+    height = 10, -- height of the trouble list when position is top or bottom
+    width = 50, -- width of the list when position is left or right
+    icons = true, -- use devicons for filenames
+    mode = "workspace_diagnostics", -- "workspace_diagnostics", "document_diagnostics", "quickfix", "lsp_references", "loclist"
+    fold_open = "", -- icon used for open folds
+    fold_closed = "", -- icon used for closed folds
+    group = true, -- group results by file
+    padding = true, -- add an extra new line on top of the list
+    action_keys = { -- key mappings for actions in the trouble list
+        -- map to {} to remove a mapping, for example:
+        -- close = {},
+        close = "q", -- close the list
+        cancel = "<esc>", -- cancel the preview and get back to your last window / buffer / cursor
+        refresh = "r", -- manually refresh
+        jump = {"<cr>", "<tab>"}, -- jump to the diagnostic or open / close folds
+        open_split = { "<c-x>" }, -- open buffer in new split
+        open_vsplit = { "<c-v>" }, -- open buffer in new vsplit
+        open_tab = { "<c-t>" }, -- open buffer in new tab
+        jump_close = {"o"}, -- jump to the diagnostic and close the list
+        toggle_mode = "m", -- toggle between "workspace" and "document" diagnostics mode
+        toggle_preview = "P", -- toggle auto_preview
+        hover = "K", -- opens a small popup with the full multiline message
+        preview = "p", -- preview the diagnostic location
+        close_folds = {"zM", "zm"}, -- close all folds
+        open_folds = {"zR", "zr"}, -- open all folds
+        toggle_fold = {"zA", "za"}, -- toggle fold of current file
+        previous = "k", -- previous item
+        next = "j" -- next item
     },
-  finder_definition_icon = '  ',
-  finder_reference_icon = '  ',
-  max_preview_lines = 10, -- preview lines of lsp_finder and definition preview
-  finder_action_keys = {
-    open = 'o',
-    vsplit = 's',
-    split = 'i',
-    quit = 'q',
-    scroll_down = '<C-f>',
-    scroll_up = '<C-b>',
+    indent_lines = true, -- add an indent guide below the fold icons
+    auto_open = false, -- automatically open the list when you have diagnostics
+    auto_close = false, -- automatically close the list when you have no diagnostics
+    auto_preview = true, -- automatically preview the location of the diagnostic. <esc> to close preview and go back to last window
+    auto_fold = false, -- automatically fold a file trouble list at creation
+    auto_jump = {"lsp_definitions"}, -- for the given modes, automatically jump if there is only a single result
+    signs = {
+        -- icons / text used for a diagnostic
+        error = "",
+        warning = "",
+        hint = "",
+        information = "",
+        other = "﫠"
     },
-  code_action_keys = {
-    quit = 'q',
-    exec = '<CR>'
-    },
-  rename_action_keys = {
-    quit = '<C-c>',
-    exec = '<CR>',
-    },
-  definition_preview_icon = '  ',
-  -- "single" "double" "round" "plus"
-  border_style = "single",
-  rename_prompt_prefix = '➤',
-  server_filetype_map = { ["jdt.ls"] = {'java'} }
+    use_diagnostic_signs = false -- enabling this will use the signs defined in your lsp client
 }
 EOF
+
+
+" =================== lsp_signature.nvim ===================
+lua << EOF
+ cfg = {
+  debug = false, -- set to true to enable debug logging
+  log_path = vim.fn.stdpath("cache") .. "/lsp_signature.log", -- log dir when debug is on
+  -- default is  ~/.cache/nvim/lsp_signature.log
+  verbose = false, -- show debug line number
+
+  bind = true, -- This is mandatory, otherwise border config won't get registered.
+               -- If you want to hook lspsaga or other signature handler, pls set to false
+  doc_lines = 10, -- will show two lines of comment/doc(if there are more than two lines in doc, will be truncated);
+                 -- set to 0 if you DO NOT want any API comments be shown
+                 -- This setting only take effect in insert mode, it does not affect signature help in normal
+                 -- mode, 10 by default
+
+  max_height = 12, -- max height of signature floating_window
+  max_width = 80, -- max_width of signature floating_window
+  noice = false, -- set to true if you using noice to render markdown
+  wrap = true, -- allow doc/signature text wrap inside floating_window, useful if your lsp return doc/sig is too long
+
+  floating_window = true, -- show hint in a floating window, set to false for virtual text only mode
+
+  floating_window_above_cur_line = true, -- try to place the floating above the current line when possible Note:
+  -- will set to true when fully tested, set to false will use whichever side has more space
+  -- this setting will be helpful if you do not want the PUM and floating win overlap
+
+  floating_window_off_x = 1, -- adjust float windows x position.
+                             -- can be either a number or function
+  floating_window_off_y = 0, -- adjust float windows y position. e.g -2 move window up 2 lines; 2 move down 2 lines
+                              -- can be either number or function, see examples
+
+  close_timeout = 4000, -- close floating window after ms when laster parameter is entered
+  fix_pos = false,  -- set to true, the floating window will not auto-close until finish all parameters
+  hint_enable = true, -- virtual hint enable
+  hint_prefix = "🐼 ",  -- Panda for parameter, NOTE: for the terminal not support emoji, might crash
+  hint_scheme = "String",
+  hi_parameter = "LspSignatureActiveParameter", -- how your parameter will be highlight
+  handler_opts = {
+    border = "rounded"   -- double, rounded, single, shadow, none, or a table of borders
+  },
+
+  always_trigger = false, -- sometime show signature on new line or in middle of parameter can be confusing, set it to false for #58
+
+  auto_close_after = nil, -- autoclose signature float win after x sec, disabled if nil.
+  extra_trigger_chars = {}, -- Array of extra characters that will trigger signature completion, e.g., {"(", ","}
+  zindex = 200, -- by default it will be on top of all floating windows, set to <= 50 send it to bottom
+
+  padding = '', -- character to pad on left and right of signature can be ' ', or '|'  etc
+
+  transparency = nil, -- disabled by default, allow floating win transparent value 1~100
+  shadow_blend = 36, -- if you using shadow as border use this set the opacity
+  shadow_guibg = 'Black', -- if you using shadow as border use this set the color e.g. 'Green' or '#121315'
+  timer_interval = 200, -- default timer check interval set to lower value if you want to reduce latency
+  toggle_key = nil, -- toggle signature on and off in insert mode,  e.g. toggle_key = '<M-x>'
+
+  select_signature_key = nil, -- cycle to next signature, e.g. '<M-n>' function overloading
+  move_cursor_key = nil, -- imap, use nvim_set_current_win to move cursor between current win and floating
+}
+
+-- recommended:
+require'lsp_signature'.setup(cfg) -- no need to specify bufnr if you don't use toggle_key
+EOF
+
 
 " =================== nvim-jdtls ===========================
 lua << EOF
@@ -811,22 +1174,26 @@ function nvim_jdtls_setup()
     -- For cmd options see:
     -- https://github.com/eclipse/eclipse.jdt.ls#running-from-the-command-line
     cmd = {
-      'java',
+      '/usr/lib/jvm/java-17-openjdk-amd64/bin/java',
       '-Declipse.application=org.eclipse.jdt.ls.core.id1',
       '-Dosgi.bundles.defaultStartLevel=4',
       '-Declipse.product=org.eclipse.jdt.ls.core.product',
       '-Dlog.protocol=true',
       '-Dlog.level=ALL',
-      '-noverify',
+      -- '-noverify',
       '-Xms1g',
       '--add-modules=ALL-SYSTEM',
       '--add-opens', 'java.base/java.util=ALL-UNNAMED',
       '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-      '-jar', vim.env.HOME .. '/local/install/jdtls/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar',
-      '-configuration', vim.env.HOME .. '/local/install/jdtls/config_linux',
+      '-jar', vim.env.HOME .. '/.local/install/jdtls/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar',
+      '-configuration', vim.env.HOME .. '/.local/install/jdtls/config_linux',
       '-data', workspace_dir
     },
     root_dir = root_dir,
+    -- For settings see:
+    -- https://github.com/mfussenegger/nvim-jdtls
+    -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
+    -- https://github.com/eclipse/eclipse.jdt.ls/blob/master/org.eclipse.jdt.ls.core/src/org/eclipse/jdt/ls/core/internal/preferences/Preferences.java
     settings = {
       java = {
         autobuild = {
@@ -835,18 +1202,42 @@ function nvim_jdtls_setup()
         referencesCodeLens = {
           enabled = true
         },
+        signatureHelp = {
+          enabled = true
+        },
         maven = {
-          downloadSourcs = true
-        }
-      }
+          downloadSources = true
+        },
+        configuration = {
+          runtimes = {
+            {
+              name = 'JavaSE-1.8',
+              path = '/usr/lib/jvm/java-8-openjdk-amd64'
+            },
+            {
+              name = 'JavaSE-11',
+              path = '/usr/lib/jvm/java-11-openjdk-amd64'
+            },
+            {
+              name = 'JavaSE-17',
+              path = '/usr/lib/jvm/java-17-openjdk-amd64'
+            },
+          },
+        },
+        maven = {
+         userSettings = vim.env.HOME .. '/.m2/settings.xml',
+        },
+      },
     },
     init_options = {
       bundles = {}
     },
   }
   require('jdtls').start_or_attach(config)
+  require('jdtls.setup').add_commands()
 end
 EOF
+
 
 augroup nvim_jdtls
     au!
