@@ -1,0 +1,43 @@
+[alias]
+    #contributes by number of commits
+	contributors = shortlog --summary --numbered
+
+    #diff with difftool
+	d = difftool
+
+    # Color graph log view
+	graph = log --graph --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
+
+	l = log --pretty=oneline -n 20 --graph --abbrev-commit
+    lg = log --color --decorate --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an (%G?)>%Creset' --abbrev-commit
+
+[commit]
+    #gpgsign = true
+
+[credential]
+	helper = cache --timeout=3600
+
+[core]
+    editor = vim
+
+[diff]
+	tool = vimdiff
+
+[difftool]
+	prompt = false
+
+
+[github]
+    user = jmullins
+
+[http]
+    #sslVerify = false
+
+[push]
+    # Use the Git 1.x.x default to avoid errors on machines with old Git
+    default = matching
+
+[user]
+	name = Jeffrey Mullins
+	email = mullins.j@gmail.com
+    #signingkey = 2AA489EA

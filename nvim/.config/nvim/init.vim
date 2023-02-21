@@ -35,6 +35,7 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'rafamadriz/friendly-snippets'
 Plug 'arkav/lualine-lsp-progress'
+Plug 'simrat39/rust-tools.nvim'
 Plug 'mfussenegger/nvim-jdtls'
 Plug 'vim-test/vim-test'
 call plug#end()
@@ -787,6 +788,12 @@ let g:vim_markdown_toml_frontmatter = 1
 let g:vim_markdown_json_frontmatter = 1
 
 
+" =================== glow =================================
+lua << EOF
+require('glow').setup()
+EOF
+
+
 " =================== octo ================================
 lua << EOF
 require"octo".setup({
@@ -950,36 +957,124 @@ else
 endif
 
 
-" =================== rust-analyzer ========================
+" =================== rust-tools ===========================
 if executable('rust-analyzer')
 lua << EOF
-local nvim_lsp = require'lspconfig'
+-- monkeypatch rust-tools to correctly detect our custom rust-analyzer
+require'rust-tools.utils.utils'.is_ra_server = function (client)
+  local name = client.name
+  local target = "rust_analyzer"
+  return string.sub(client.name, 1, string.len(target)) == target
+    or client.name == "rust_analyzer-standalone"
+end
 
-nvim_lsp.rust_analyzer.setup({
-  -- on_attach is a callback called when the language server attachs to the buffer
-  -- on_attach = on_attach,
-  settings = {
-    -- config from: https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
-    ["rust-analyzer"] = {
-      cargo = {
-        target = "thumbv7em-none-eabihf",
-        runBuildScripts = false,
-        allFeatures = true
-      },
-      checkOnSave = {
-        enable = true,
-        target = "thumbv7em-none-eabihf",
-        allTargets = false,
-      },
-      procMacro = {
-        enable = false
+-- Configure LSP through rust-tools.nvim plugin, with lots of bonus
+-- content for Hubris compatibility
+local cache = {}
+local clients = {}
+require'rust-tools'.setup{
+  tools = { -- rust-tools options
+    autoSetHints = true,
+    inlay_hints = {
+      show_parameter_hints = false,
+      parameter_hints_prefix = "",
+      other_hints_prefix = "",
+      -- do other configuration here as desired
+    },
+  },
+
+  server = {
+    on_new_config = function(new_config, new_root_dir)
+      local bufnr = vim.api.nvim_get_current_buf()
+      local bufname = vim.api.nvim_buf_get_name(bufnr)
+      local dir = new_config.root_dir()
+      if string.find(dir, "hubris") then
+        -- Run `xtask lsp` for the target file, which gives us a JSON
+        -- dictionary with bonus configuration.
+        local prev_cwd = vim.fn.getcwd()
+        vim.cmd("cd " .. dir)
+        local cmd = dir .. "/target/debug/xtask lsp "
+        -- Notify `xtask lsp` of existing clients in the CLI invocation,
+        -- so it can check against them first (which would mean a faster
+        -- attach)
+        for _,v in pairs(clients) do
+          local c = vim.fn.escape(vim.json.encode(v), '"')
+          cmd = cmd .. '-c"' .. c .. '" '
+        end
+        local handle = io.popen(cmd .. bufname)
+        handle:flush()
+        local result = handle:read("*a")
+        handle:close()
+        vim.cmd("cd " .. prev_cwd)
+
+        -- If `xtask` doesn't know about `lsp`, then it will print an error to
+        -- stderr and return nothing on stdout.
+        if result == "" then
+          vim.notify("recompile `xtask` for `lsp` support", vim.log.levels.WARN)
+        end
+
+        -- If the given file should be handled with special care, then
+        -- we give the rust-analyzer client a custom name (to prevent
+        -- multiple buffers from attaching to it), then cache the JSON in
+        -- a local variable for use in `on_attach`
+        local json = vim.json.decode(result)
+        if json["Ok"] ~= nil then
+          new_config.name = "rust_analyzer_" .. json.Ok.hash
+          cache[bufnr] = json
+          table.insert(clients, {toml = json.Ok.app, task = json.Ok.task})
+        else
+          -- TODO:
+          -- vim.notify(vim.inspect(json.Err), vim.log.levels.ERROR)
+        end
+      end
+    end,
+
+    on_attach = function(client, bufnr)
+      local json = cache[bufnr]
+      if json ~= nil then
+        local config = vim.deepcopy(client.config)
+        local ra = config.settings["rust-analyzer"]
+        -- Do rust-analyzer builds in a separate folder to avoid blocking
+        -- the main build with a file lock.
+        table.insert(json.Ok.buildOverrideCommand, "--target-dir")
+        table.insert(json.Ok.buildOverrideCommand, "target/rust-analyzer")
+        ra.cargo = {
+          extraEnv = json.Ok.extraEnv,
+          features = json.Ok.features,
+          noDefaultFeatures = true,
+          target = json.Ok.target,
+          buildScripts = {
+            overrideCommand = json.Ok.buildOverrideCommand,
+          },
+        }
+        ra.check = {
+          overrideCommand = json.Ok.buildOverrideCommand,
+        }
+        config.lspinfo = function()
+          return { "Hubris app:      " .. json.Ok.app,
+                   "Hubris task:     " .. json.Ok.task }
+        end
+        client.config = config
+      end
+    end,
+
+    settings = {
+      ["rust-analyzer"] = {
+        -- enable clippy on save
+        checkOnSave = {
+          command = "clippy",
+          extraArgs = { '--target-dir', 'target/rust-analyzer' },
+        },
+        diagnostics = {
+          disabled = {"inactive-code"},
+        },
       }
     }
-  }
-})
+  },
+}
 EOF
 else
-  echo "You might want to install rust-analyzer: https://rust-analyzer.github.io"
+  echo "You might want to install rust-analyzer"
 endif
 
 
@@ -1225,7 +1320,7 @@ function nvim_jdtls_setup()
           },
         },
         maven = {
-         userSettings = vim.env.HOME .. '/.m2/settings.xml',
+         userSettings = vim.env.HOME .. '/.m2/settings.jdt.xml',
         },
       },
     },

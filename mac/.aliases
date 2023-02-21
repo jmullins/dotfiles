@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Detect which `ls` flavor is in use
+if ls --color > /dev/null 2>&1; then # GNU `ls`
+	lscolorflag="--color"
+else # OS X `ls`
+	lscolorflag="-G"
+fi
+
+# ls with color
+# colors controlled by LS_COLORS which will
+# be set in .exports by dircolors
+alias ls="ls ${lscolorflag}"
+
+# grep with color
+alias grep='grep --color=auto'
