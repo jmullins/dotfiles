@@ -2,21 +2,31 @@ call plug#begin()
 Plug 'vim-scripts/Wombat'
 Plug 'vim-scripts/wombat256.vim'
 Plug 'shaunsingh/moonlight.nvim'
+Plug 'projekt0n/github-nvim-theme'
 Plug 'folke/which-key.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
+Plug 'echasnovski/mini.icons'
+Plug 'ChristianChiarulli/neovim-codicons'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'kyazdani42/nvim-tree.lua'
 Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-dap.nvim'
+Plug 'nvim-telescope/telescope-ui-select.nvim'
 Plug 'glepnir/dashboard-nvim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'elzr/vim-json'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-surround'
-Plug 'simrat39/symbols-outline.nvim'
+Plug 'hedyhli/outline.nvim'
 Plug 'lewis6991/gitsigns.nvim'
+"Fix for nvim 0.9.5
+"~/.local/share/nvim/plugged/hover.nvim/lua/hover/actions.lua
+"uv = require('luv')
+"s/vim.uv/uv/g
+Plug 'lewis6991/hover.nvim'
 Plug 'sindrets/diffview.nvim'
 Plug 'godlygeek/tabular'
 Plug 'plasticboy/vim-markdown'
@@ -38,13 +48,35 @@ Plug 'rafamadriz/friendly-snippets'
 Plug 'arkav/lualine-lsp-progress'
 Plug 'simrat39/rust-tools.nvim'
 Plug 'mfussenegger/nvim-jdtls'
+Plug 'mfussenegger/nvim-lint'
+Plug 'mfussenegger/nvim-dap'
+Plug 'nvim-neotest/nvim-nio'
+Plug 'rcarriga/nvim-dap-ui'
 Plug 'vim-test/vim-test'
+Plug 'danymat/neogen'
+"Plug 'anymat/neogen'
+"Fix for nvim 0.9.5 - https://github.com/ldelossa/nvim-ide/issues/126
+"~/.local/share/nvim/plugged/nvim-ide/lua/ide/components/explorer/filenode.lua
+"uv = require('luv')
+"s/vim.uv/uv/g
+Plug 'ldelossa/nvim-ide'
+Plug 'rcarriga/nvim-notify'
+Plug 'rcarriga/nvim-dap-ui'
+Plug 'DNLHC/glance.nvim'
 call plug#end()
 
 
 " ==================== colors =============================
 set termguicolors
-colorscheme moonlight
+"colorscheme moonlight
+colorscheme github_dark_tritanopia
+
+lua << EOF
+-- disable lsp semantic highlighting
+for _, group in ipairs(vim.fn.getcompletion("@lsp", "highlight")) do
+  vim.api.nvim_set_hl(0, group, {})
+end
+EOF
 
 
 " ==================== display =============================
@@ -100,101 +132,132 @@ let mapleader = ','
 lua << EOF
 local wk = require("which-key")
 wk.setup {
-  popup_mappings = {
+  key = {
     scroll_down = '<c-f>',
     scroll_up = '<c-b>',
   },
 }
 
--- normal mode mappings
-wk.register({
-  ["<c-l>"] = { "<cmd>nohlsearch<cr><c-l>", "Redraw / Remove Search Highlight"},
-  ["<c-e>"] = { "<cmd>NvimTreeToggle<cr>", "File Tree" },
-  ["<c-p>"] = { "<cmd>Telescope oldfiles<cr>", "Recent Files" },
-  ["<c-.>"] = { "<cmd>Telescope find_files cwd=~/dotfiles/nvim <cr>", "Dot Files" },
-  ["<c-i>"] = { "<cmd>Telescope find_files cwd=~/.config/nvim <cr>", "init.vim" },
-  -- which key help
-  ["<leader>?"] = { "<cmd>WhichKey<cr>", "WhichKey"},
-  -- bufferline mappings
-  ["<leader>1"] = { "<cmd>BufferLineGoToBuffer 1<cr>", "Buffer 1" },
-  ["<leader>2"] = { "<cmd>BufferLineGoToBuffer 2<cr>", "Buffer 2" },
-  ["<leader>3"] = { "<cmd>BufferLineGoToBuffer 3<cr>", "Buffer 3" },
-  ["<leader>4"] = { "<cmd>BufferLineGoToBuffer 4<cr>", "Buffer 4" },
-  ["<leader>5"] = { "<cmd>BufferLineGoToBuffer 5<cr>", "Buffer 5" },
-  ["<leader>6"] = { "<cmd>BufferLineGoToBuffer 6<cr>", "Buffer 6" },
-  ["<leader>7"] = { "<cmd>BufferLineGoToBuffer 7<cr>", "Buffer 7" },
-  ["<leader>8"] = { "<cmd>BufferLineGoToBuffer 8<cr>", "Buffer 8" },
-  ["<leader>9"] = { "<cmd>BufferLineGoToBuffer 9<cr>", "Buffer 9" },
-  -- find mappings
-  ["<leader>f"] = { name = "+find" },
-  ["<leader>ff"] = { "<cmd>Telescope find_files<cr>", "Find Files" },
-  ["<leader>fg"] = { "<cmd>Telescope live_grep<cr>", "Live Grep" },
-  ["<leader>fr"] = { "<cmd>Telescope oldfiles<cr>", "Recent Files" },
-  ["<leader>fb"] = { "<cmd>Telescope buffers<cr>", "Buffers" },
-  ["<leader>fh"] = { "<cmd>Telescope help_tags<cr>", "Help Tags" },
-  ["<leader>ft"] = { "<cmd>NvimTreeToggle<cr>", "File Tree" },
-  -- get mappings
-  ["<leader>g"] = { name = "+get" },
-  ["<leader>gd"] = { "<Cmd>Telescope lsp_definitions<CR>", "Definition" },
-  ["<leader>gi"] = { "<Cmd>Telescope lsp_implementations<CR>", "Implementations" },
-  ["<leader>gD"] = { "<Cmd>lua vim.lsp.buf.declaration()<CR>", "Declaration" },
-  ["<leader>gr"] = { "<Cmd>Telescope lsp_references<CR>", "References" },
-  ["<leader>ge"] = { "<Cmd>Telescope diagnostics bufnr=0<CR>", "Document Diagnostics" },
-  ["<leader>gE"] = { "<Cmd>Telescope diagnostics <CR>", "Workspace Diagnostics" },
-  ["<leader>gs"] = { "<Cmd>Telescope lsp_document_symbols<CR>", "Document Symbols" },
-  ["<leader>gS"] = { "<Cmd>Telescope lsp_workspace_symbols<CR>", "Workspace Symbols" },
-  ["gd"] = { "<Cmd>TroubleToggle lsp_definitions<CR>", "Toggle Definitions" },
-  ["gr"] = { "<Cmd>TroubleToggle lsp_references<CR>", "Toggle References" },
-  ["gi"] = { "<Cmd>TroubleToggle lsp_implementations<CR>", "Toggle Implementations" },
-  ["ge"] = { "<Cmd>TroubleToggle document_diagnostics<CR>", "Toggle Document Diagnostics" },
-  ["gE"] = { "<Cmd>TroubleToggle workspace_diagnostics<CR>", "Toggle Workspace Diagnostics" },
-  ["gn"] = { '<Cmd>lua require("trouble").next({skip_groups = true, jump = true})<CR>', "Next" },
-  ["gp"] = { '<Cmd>lua require("trouble").previous({skip_groups = true, jump = true})<CR>', "Previous" },
-  ["gh"] = { "<Cmd>lua vim.lsp.buf.hover()<CR>", "Code Hover" },
-  ["gs"] = { "<Cmd>lua vim.lsp.buf.signature_help()<CR>", "Signature" },
-  ["go"] = { "<Cmd>SymbolsOutline<CR>", "Toggle Symbols Outline" },
+wk.add({
+    -- normal mode mappings
+    { "<c-l>",  "<cmd>nohlsearch<cr><c-l>", desc = "Redraw / Remove Search Highlight"},
+    { "<c-e>", "<cmd>NvimTreeFindFileToggle<cr>", desc  = "File Tree Find File" },
+    { "<c-p>", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
 
+    -- nvim config
+    { "<leader>i", "<cmd>Telescope find_files cwd=~/.config/nvim follow=true <cr>", desc = "init.vim" },
 
-  -- history mappings
-  ["<leader>h"] = { name = "+history" },
-  ["<leader>hn"] = { "<Cmd>Gitsigns next_hunk<cr>", "Diff Next Hunk" },
-  ["<leader>hp"] = { "<Cmd>Gitsigns prev_hunk<cr>", "Diff Prev Hunk" },
-  ["<leader>hd"] = { "<Cmd>Gitsigns diffthis<cr>", "Diff" },
-  ["<leader>hw"] = { "<Cmd>Gitsigns toggle_word_diff<cr>", "Toggle Word Diff" },
-  ["<leader>hD"] = { "<Cmd>DiffviewOpen<cr>", "Diff View" },
-  ["<leader>hh"] = { "<Cmd>DiffviewFileHistory %<cr>", "Diff View File History" },
-  -- markdown mappings
-  ["<leader>m"] = { name = "+markdown" },
-  ["<leader>mp"] = { "<Cmd>Glow<cr>", "Markdown Preview" },
-  ["<leader>mc"] = { "<Cmd>InsertToc<cr>", "Markdown Insert Table of Contents" },
-  ["<leader>mC"] = { "<Cmd>Toc<cr>", "Markdown View Table of Contents" },
-  ["<leader>mt"] = { "<Cmd>TableFormat<cr>", "Markdown Format Table" },
-  -- code action mappings
-  ["<leader>c"] = { name = "+code action" },
-  ["<leader>cf"] = { "<cmd>lua vim.lsp.buf.formatting()<CR>", "Code Format" },
-  ["<leader>ca"] = { "<Cmd>lua vim.lsp.buf.code_action()<CR>", "Code Action" },
-  ["<leader>cr"] = { "<Cmd>lua vim.lsp.buf.rename()<CR>", "Rename Symbol" },
-  -- testing mappings
-  ["<leader>t"] = { name = "+test" },
-  ["<leader>tf"] = { "<cmd>TestFile<CR>", "Test File" },
-  ["<leader>ts"] = { "<cmd>TestSuite<CR>", "Test Suite" },
-  ["<leader>tl"] = { "<cmd>TestLast<CR>", "Test Last" },
-  ["<leader>tn"] = { "<cmd>TestNearest<CR>", "Test Nearest" },
-})
+    -- which key help
+    { "<leader>?", "<cmd>WhichKey<cr>", desc = "WhichKey"},
 
--- visual mode mappings
-wk.register({
-  ["<leader>ca"] = { "<cmd>lua vim.lsp.buf.code_action()<CR>", "Code Action" },
-  ["<leader>cf"] = { "<cmd>lua vim.lsp.buf.range_formatting()<CR>", "Code Format" },
-}, {
-  mode = "v"
-})
+    -- bufferline mappings
+    { "<leader>1", "<cmd>BufferLineGoToBuffer 1<cr>", desc = "Buffer 1" },
+    { "<leader>2", "<cmd>BufferLineGoToBuffer 2<cr>", desc = "Buffer 2" },
+    { "<leader>3", "<cmd>BufferLineGoToBuffer 3<cr>", desc = "Buffer 3" },
+    { "<leader>4", "<cmd>BufferLineGoToBuffer 4<cr>", desc = "Buffer 4" },
+    { "<leader>5", "<cmd>BufferLineGoToBuffer 5<cr>", desc = "Buffer 5" },
+    { "<leader>6", "<cmd>BufferLineGoToBuffer 6<cr>", desc = "Buffer 6" },
+    { "<leader>7", "<cmd>BufferLineGoToBuffer 7<cr>", desc = "Buffer 7" },
+    { "<leader>8", "<cmd>BufferLineGoToBuffer 8<cr>", desc = "Buffer 8" },
+    { "<leader>9", "<cmd>BufferLineGoToBuffer 9<cr>", desc = "Buffer 9" },
 
-wk.register({
-}, {
-  mode = "t"
+    { "<leader>f", group = "find" },
+    { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+    { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
+    { "<leader>fr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
+    { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
+    { "<leader>fc", "<cmd>Telescope commands<cr>", desc = "Commands" },
+    { "<leader>fh", "<cmd>Telescope help_tags<cr>", desc = "Help Tags" },
+    { "<leader>fk", "<cmd>Telescope keymaps<cr>", desc = "Keymaps" },
+    { "<leader>ft", "<cmd>NvimTreeToggle<cr>", desc = "File Tree" },
+
+    -- get mappings
+    { "<leader>g", group = "get" },
+    { "<leader>gd", "<Cmd>Telescope lsp_definitions<CR>", desc = "Definition" },
+    { "<leader>gi", "<Cmd>Telescope lsp_implementations<CR>", desc = "Implementations" },
+    { "<leader>gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>", desc = "Declaration" },
+    { "<leader>gr", "<Cmd>Telescope lsp_references<CR>", desc = "References" },
+    { "<leader>ge", "<Cmd>Telescope diagnostics bufnr=0<CR>", desc = "Document Diagnostics" },
+    { "<leader>gE", "<Cmd>Telescope diagnostics <CR>", desc = "Workspace Diagnostics" },
+    { "<leader>gs", "<Cmd>Telescope lsp_document_symbols<CR>", desc = "Document Symbols" },
+    { "<leader>gS", "<Cmd>Telescope lsp_workspace_symbols<CR>", desc = "Workspace Symbols" },
+    { "gd", "<Cmd>TroubleToggle lsp_definitions<CR>", desc = "Toggle Definitions" },
+    { "gr", "<Cmd>TroubleToggle lsp_references<CR>", desc = "Toggle References" },
+    { "gi", "<Cmd>TroubleToggle lsp_implementations<CR>", desc = "Toggle Implementations" },
+    { "ge", "<Cmd>TroubleToggle document_diagnostics<CR>", desc = "Toggle Document Diagnostics" },
+    { "gE", "<Cmd>TroubleToggle workspace_diagnostics<CR>", desc = "Toggle Workspace Diagnostics" },
+    { "gn", '<Cmd>lua require("trouble").next({skip_groups = true, jump = true})<CR>', desc = "Next" },
+    { "gp", '<Cmd>lua require("trouble").previous({skip_groups = true, jump = true})<CR>', desc = "Previous" },
+    --{ "gh", "<Cmd>lua vim.lsp.buf.hover()<CR>", desc = "Code Hover" },
+    { "gh", "<Cmd>lua require('hover').hover()<CR>", desc = "Code Hover" },
+    { "gs", "<Cmd>lua vim.lsp.buf.signature_help()<CR>", desc = "Signature" },
+    -- { "gs", "<Cmd>lua require('lsp_signature').toggle_float_win()<CR>" },
+    -- { "go", "<Cmd>Outline<CR>", desc = "Toggle Symbols Outline" },
+
+    -- history mappings
+    { "<leader>h",  group = "history" },
+    { "<leader>hn", "<Cmd>Gitsigns next_hunk<cr>", desc = "Diff Next Hunk" },
+    { "<leader>hp", "<Cmd>Gitsigns prev_hunk<cr>", desc = "Diff Prev Hunk" },
+    { "<leader>hd", "<Cmd>Gitsigns diffthis<cr>", desc = "Diff" },
+    { "<leader>hw", "<Cmd>Gitsigns toggle_word_diff<cr>", desc = "Toggle Word Diff" },
+    { "<leader>hD", "<Cmd>DiffviewOpen<cr>", desc = "Diff View" },
+    { "<leader>hh", "<Cmd>DiffviewFileHistory %<cr>", desc = "Diff View File History" },
+
+    -- markdown mappings
+    { "<leader>m", group = "markdown" },
+    { "<leader>mp", "<Cmd>Glow<cr>", desc = "Markdown Preview" },
+    { "<leader>mc", "<Cmd>InsertToc<cr>", desc = "Markdown Insert Table of Contents" },
+    { "<leader>mC", "<Cmd>Toc<cr>", desc = "Markdown View Table of Contents" },
+    { "<leader>mt", "<Cmd>TableFormat<cr>", desc = "Markdown Format Table" },
+
+    -- code action mappings
+    { "<leader>c", group = "code action" },
+    { "<leader>cf", "<cmd>lua vim.lsp.buf.format({ async = false })<CR>", desc = "Code Format" },
+    { "<leader>ca", "<Cmd>lua vim.lsp.buf.code_action()<CR>", desc = "Code Action" },
+    { "<leader>cr", "<Cmd>lua vim.lsp.buf.rename()<CR>", desc = "Rename Symbol" },
+    { "<leader>cd", "<Cmd>Neogen<CR>", desc = "Generate Doc" },
+
+    -- octo mappings
+    { "<leader>o", group = "octo" },
+    { "<leader>oa", "<cmd>Octo actions<CR>", desc = "Octo menu" },
+
+    -- testing mappings
+    { "<leader>t", group = "test" },
+    { "<leader>tf", "<cmd>TestFile $TEST_OPTS<CR>", desc = "Test File" },
+    { "<leader>ts", "<cmd>TestSuite $TEST_OPTS<CR>", desc = "Test Suite" },
+    { "<leader>tl", "<cmd>TestLast $TEST_OPTS<CR>", desc = "Test Last" },
+    { "<leader>tn", "<cmd>TestNearest $TEST_OPTS<CR>", desc = "Test Nearest" },
+
+    -- debug mappings
+    { "<F4>", '<cmd>lua require("dap.ext.vscode").load_launchjs()<CR>', desc = "Debug Load launch.json" },
+    { "<F5>", '<cmd>lua require("dap").continue()<CR>', desc = "Debug Run / Continue" },
+    { "<F10>", '<cmd>lua require("dap").step_over()<CR>', desc = "Debug Step Over" },
+    { "<F11>", '<cmd>lua require("dap").step_into()<CR>', desc = "Debug Step Into" },
+    { "<F12>", '<cmd>lua require("dap").step_out()<CR>', desc = "Debug Step Out" },
+    { "<leader>d", group = "debug" },
+    { "<leader>dc", '<cmd>lua require("dap").continue()<CR>', desc = "Continue" },
+    { "<leader>dx", '<cmd>lua require("dap").terminate()<CR>', desc = "Terminate" },
+    { "<leader>db", '<cmd>lua require("dap").toggle_breakpoint()<CR>', desc = "Toggle Breakpoint" },
+    { "<leader>dr", '<cmd>lua require("dap").repl.toggle()<CR>', desc = "Toggle Repl" },
+    { "<leader>dv", '<cmd>lua require("dap.ui.widgets").hover()<CR>', desc = "Variables" },
+    { "<leader>dtn", '<cmd>lua require("jdtls").test_nearest_method()<CR>', desc = "Test Nearest (DAP)" },
+    { "<leader>dtf", '<cmd>lua require("jdtls").test_class()<CR>', desc = "Test Class (DAP)" },
+    { "<leader>dlc", '<cmd>Telescope dap commands<CR>', desc = "List Commands" },
+    { "<leader>dlf", '<cmd>Telescope dap frames<CR>', desc = "List Frames" },
+    { "<leader>dlv", '<cmd>Telescope dap variables<CR>', desc = "List Variables" },
+    { "<leader>dlb", '<cmd>Telescope dap list_breakpoints<CR>', desc = "List Breakpoints" },
+    { "<leader>dui", '<cmd>lua require("dapui").toggle()<CR>', desc = "Toggle DAP UI" },
+    {
+      mode = { "v" },
+      { "<leader>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", desc = "Code Action" },
+      { "<leader>cf", "<cmd>lua vim.lsp.buf.format({ async = false })<CR>", desc = "Code Format" },
+    }
 })
 EOF
+
+" ==================== key mappings ========================
+imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
 
 
 " ==================== file type ===========================
@@ -213,8 +276,9 @@ au BufNewFile,BufRead *.txt setlocal spell et ts=4 sw=4
 au BufNewFile,BufRead *.yml,*.yaml setlocal et ts=2 sw=2
 
 augroup filetypedetect
-  au BufNewFile,BufRead *.avsc set filetype=json
+  au BufNewFile,BufRead *.avsc,*.code-snippets set filetype=json
   au BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux
+  au BufNewFile,BufRead Jenkinsfile set filetype=groovy
 augroup END
 
 au FileType gitcommit setlocal spell
@@ -339,7 +403,21 @@ END
 
 " ==================== nvim-tree ===========================
 lua << EOF
-local tree_cb = require'nvim-tree.config'.nvim_tree_callback
+
+local function on_nvim_tree_attach(bufnr)
+  local api = require "nvim-tree.api"
+
+  local function opts(desc)
+    return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+  end
+
+  -- default mappings
+  api.config.mappings.default_on_attach(bufnr)
+
+  -- custom mappings
+  vim.keymap.set('n', '<c-e>', api.tree.close, opts('Close'))
+  vim.keymap.set('n', '?', api.tree.toggle_help, opts('Help'))
+end
 
 require'nvim-tree'.setup{
   git = {
@@ -348,24 +426,17 @@ require'nvim-tree'.setup{
   filters = {
     dotfiles = false,
     custom = {
-      '.git',
-      '.DS_Store',
+      '\\.git',
+      '\\.DS_Store',
     },
   },
   view = {
-    width="35%",
-    mappings = {
-      list = {
-        { key = "?", cb = tree_cb("toggle_help") },
-        { key = "m", cb = tree_cb("rename") },
-        { key = "r", cb = tree_cb("refresh") },
-        { key = "<c-e>", cb = tree_cb("close") },
-      }
-    }
+    width=45,
   },
   renderer = {
     group_empty = true
-  }
+  },
+  on_attach = on_nvim_tree_attach,
 }
 EOF
 
@@ -410,8 +481,16 @@ require('telescope').setup{
       },
   },
   extensions = {
-  }
+    ["ui-select"] = {
+      require("telescope.themes").get_dropdown {
+        -- even more opts
+      }
+   },
+  },
 }
+
+require('telescope').load_extension('dap')
+require("telescope").load_extension("ui-select")
 EOF
 
 
@@ -452,6 +531,12 @@ require('dashboard').setup({
            key = 'r'
         },
         {
+           desc = ' Pull Requests',
+           group = 'Number',
+           action = 'Octo pr list',
+           key = 'p'
+        },
+        {
            desc = ' Dot Files',
            group = 'Number',
            action = 'Telescope find_files cwd=~/dotfiles',
@@ -483,7 +568,7 @@ EOF
 lua << EOF
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the four listed parsers should always be installed)
-  ensure_installed = { "lua", "help", "java", "vim", "bash" },
+  ensure_installed = { "lua", "vimdoc", "java", "vim", "bash" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,
@@ -505,6 +590,8 @@ require'nvim-treesitter.configs'.setup {
     -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
     -- the name of the parser)
     -- list of language that will be disabled
+
+    -- disable java parser since it's too slow
     disable = { "java"  },
 
     -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
@@ -512,77 +599,285 @@ require'nvim-treesitter.configs'.setup {
     -- Using this option may slow down your editor, and you may see some duplicate highlights.
     -- Instead of true it can also be a list of languages
     additional_vim_regex_highlighting = false,
+
+  },
+
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = "<cr>",
+      scope_incremental = "<cr>",
+      node_incremental = "<tab>",
+      node_decremental = "<s-tab>",
+    },
   },
 }
 EOF
 
 
-" =================== symbols-outline ======================
+" =================== outline =============================
 lua << EOF
-local opts = {
-  highlight_hovered_item = true,
-  show_guides = true,
-  auto_preview = false,
-  position = 'right',
-  relative_width = true,
-  width = 25,
-  auto_close = false,
-  show_numbers = false,
-  show_relative_numbers = false,
-  show_symbol_details = true,
-  preview_bg_highlight = 'Pmenu',
-  autofold_depth = nil,
-  auto_unfold_hover = true,
-  fold_markers = { '', '' },
-  wrap = false,
-  keymaps = { -- These keymaps can be a string or a table for multiple keys
-    close = {"<Esc>", "q"},
-    goto_location = "<Cr>",
-    focus_location = "o",
-    hover_symbol = "<C-space>",
-    toggle_preview = "K",
-    rename_symbol = "r",
-    code_actions = "a",
-    fold = "h",
-    unfold = "l",
-    fold_all = "W",
-    unfold_all = "E",
-    fold_reset = "R",
+require("outline").setup({
+  outline_window = {
+    -- Where to open the split window: right/left
+    position = 'right',
+    -- The default split commands used are 'topleft vs' and 'botright vs'
+    -- depending on `position`. You can change this by providing your own
+    -- `split_command`.
+    -- `position` will not be considered if `split_command` is non-nil.
+    -- This should be a valid vim command used for opening the split for the
+    -- outline window. Eg, 'rightbelow vsplit'.
+    split_command = nil,
+
+    -- Percentage or integer of columns
+    width = 35,
+    -- Whether width is relative to the total width of nvim
+    -- When relative_width = true, this means take 25% of the total
+    -- screen width for outline window.
+    relative_width = true,
+
+    -- Auto close the outline window if goto_location is triggered and not for
+    -- peek_location
+    auto_close = false,
+    -- Automatically scroll to the location in code when navigating outline window.
+    auto_jump = false,
+    -- boolean or integer for milliseconds duration to apply a temporary highlight
+    -- when jumping. false to disable.
+    jump_highlight_duration = 300,
+    -- Whether to center the cursor line vertically in the screen when
+    -- jumping/focusing. Executes zz.
+    center_on_jump = true,
+
+    -- Vim options for the outline window
+    show_numbers = false,
+    show_relative_numbers = false,
+    wrap = false,
+
+    -- true/false/'focus_in_outline'/'focus_in_code'.
+    -- The last two means only show cursorline when the focus is in outline/code.
+    -- 'focus_in_outline' can be used if the outline_items.auto_set_cursor
+    -- operations are too distracting due to visual contrast caused by cursorline.
+    show_cursorline = true,
+    -- Enable this only if you enabled cursorline so your cursor color can
+    -- blend with the cursorline, in effect, as if your cursor is hidden
+    -- in the outline window.
+    -- This makes your line of cursor have the same color as if the cursor
+    -- wasn't focused on the outline window.
+    -- This feature is experimental.
+    hide_cursor = false,
+
+    -- Whether to auto-focus on the outline window when it is opened.
+    -- Set to false to *always* retain focus on your previous buffer when opening
+    -- outline.
+    -- If you enable this you can still use bangs in :Outline! or :OutlineOpen! to
+    -- retain focus on your code. If this is false, retaining focus will be
+    -- enforced for :Outline/:OutlineOpen and you will not be able to have the
+    -- other behaviour.
+    focus_on_open = true,
+    -- Winhighlight option for outline window.
+    -- See :help 'winhl'
+    -- To change background color to "CustomHl" for example, use "Normal:CustomHl".
+    winhl = '',
   },
-  lsp_blacklist = {},
-  symbol_blacklist = {},
+
+  outline_items = {
+    -- Show extra details with the symbols (lsp dependent) as virtual next
+    show_symbol_details = true,
+    -- Show corresponding line numbers of each symbol on the left column as
+    -- virtual text, for quick navigation when not focused on outline.
+    -- Why? See this comment:
+    -- https://github.com/simrat39/symbols-outline.nvim/issues/212#issuecomment-1793503563
+    show_symbol_lineno = false,
+    -- Whether to highlight the currently hovered symbol and all direct parents
+    highlight_hovered_item = true,
+    -- Whether to automatically set cursor location in outline to match
+    -- location in code when focus is in code. If disabled you can use
+    -- `:OutlineFollow[!]` from any window or `<C-g>` from outline window to
+    -- trigger this manually.
+    auto_set_cursor = true,
+    -- Autocmd events to automatically trigger these operations.
+    auto_update_events = {
+      -- Includes both setting of cursor and highlighting of hovered item.
+      -- The above two options are respected.
+      -- This can be triggered manually through `follow_cursor` lua API,
+      -- :OutlineFollow command, or <C-g>.
+      follow = { 'CursorMoved' },
+      -- Re-request symbols from the provider.
+      -- This can be triggered manually through `refresh_outline` lua API, or
+      -- :OutlineRefresh command.
+      items = { 'InsertLeave', 'WinEnter', 'BufEnter', 'BufWinEnter', 'TabEnter', 'BufWritePost' },
+    },
+  },
+
+  -- Options for outline guides which help show tree hierarchy of symbols
+  guides = {
+    enabled = true,
+    markers = {
+      -- It is recommended for bottom and middle markers to use the same number
+      -- of characters to align all child nodes vertically.
+      bottom = '└',
+      middle = '├',
+      vertical = '│',
+    },
+  },
+
+  symbol_folding = {
+    -- Depth past which nodes will be folded by default. Set to false to unfold all on open.
+    autofold_depth = 1,
+    -- When to auto unfold nodes
+    auto_unfold = {
+      -- Auto unfold currently hovered symbol
+      hovered = true,
+      -- Auto fold when the root level only has this many nodes.
+      -- Set true for 1 node, false for 0.
+      only = true,
+    },
+    markers = { '', '' },
+  },
+
+  preview_window = {
+    -- Automatically open preview of code location when navigating outline window
+    auto_preview = false,
+    -- Automatically open hover_symbol when opening preview (see keymaps for
+    -- hover_symbol).
+    -- If you disable this you can still open hover_symbol using your keymap
+    -- below.
+    open_hover_on_preview = false,
+    width = 50,     -- Percentage or integer of columns
+    min_width = 50, -- This is the number of columns
+    -- Whether width is relative to the total width of nvim.
+    -- When relative_width = true, this means take 50% of the total
+    -- screen width for preview window, ensure the result width is at least 50
+    -- characters wide.
+    relative_width = true,
+    -- Border option for floating preview window.
+    -- Options include: single/double/rounded/solid/shadow or an array of border
+    -- characters.
+    -- See :help nvim_open_win() and search for "border" option.
+    border = 'single',
+    -- winhl options for the preview window, see ':h winhl'
+    winhl = 'NormalFloat:',
+    -- Pseudo-transparency of the preview window, see ':h winblend'
+    winblend = 0,
+    -- Experimental feature that let's you edit the source content live
+    -- in the preview window. Like VS Code's "peek editor".
+    live = false
+  },
+
+  -- These keymaps can be a string or a table for multiple keys.
+  -- Set to `{}` to disable. (Using 'nil' will fallback to default keys)
+  keymaps = {
+    show_help = '?',
+    close = {'<Esc>', 'q'},
+    -- Jump to symbol under cursor.
+    -- It can auto close the outline window when triggered, see
+    -- 'auto_close' option above.
+    goto_location = '<Cr>',
+    -- Jump to symbol under cursor but keep focus on outline window.
+    peek_location = 'o',
+    -- Visit location in code and close outline immediately
+    goto_and_close = '<S-Cr>',
+    -- Change cursor position of outline window to match current location in code.
+    -- 'Opposite' of goto/peek_location.
+    restore_location = '<C-g>',
+    -- Open LSP/provider-dependent symbol hover information
+    hover_symbol = '<C-space>',
+    -- Preview location code of the symbol under cursor
+    toggle_preview = 'K',
+    rename_symbol = 'r',
+    code_actions = 'a',
+    -- These fold actions are collapsing tree nodes, not code folding
+    fold = 'h',
+    unfold = 'l',
+    fold_toggle = '<Tab>',
+    -- Toggle folds for all nodes.
+    -- If at least one node is folded, this action will fold all nodes.
+    -- If all nodes are folded, this action will unfold all nodes.
+    fold_toggle_all = '<S-Tab>',
+    fold_all = 'W',
+    unfold_all = 'E',
+    fold_reset = 'R',
+    -- Move down/up by one line and peek_location immediately.
+    -- You can also use outline_window.auto_jump=true to do this for any
+    -- j/k/<down>/<up>.
+    down_and_jump = '<C-j>',
+    up_and_jump = '<C-k>',
+  },
+
+  providers = {
+    priority = { 'lsp', 'coc', 'markdown', 'norg' },
+    -- Configuration for each provider (3rd party providers are supported)
+    lsp = {
+      -- Lsp client names to ignore
+      blacklist_clients = {},
+    },
+    markdown = {
+      -- List of supported ft's to use the markdown provider
+      filetypes = {'markdown'},
+    },
+  },
+
   symbols = {
-    File = { icon = "", hl = "@text.uri" },
-    Module = { icon = "", hl = "@namespace" },
-    Namespace = { icon = "", hl = "@namespace" },
-    Package = { icon = "", hl = "@namespace" },
-    Class = { icon = "𝓒", hl = "@type" },
-    Method = { icon = "ƒ", hl = "@method" },
-    Property = { icon = "", hl = "@method" },
-    Field = { icon = "", hl = "@field" },
-    Constructor = { icon = "", hl = "@constructor" },
-    Enum = { icon = "ℰ", hl = "@type" },
-    Interface = { icon = "ﰮ", hl = "@type" },
-    Function = { icon = "", hl = "@function" },
-    Variable = { icon = "", hl = "@constant" },
-    Constant = { icon = "", hl = "@constant" },
-    String = { icon = "𝓐", hl = "@string" },
-    Number = { icon = "#", hl = "@number" },
-    Boolean = { icon = "⊨", hl = "@boolean" },
-    Array = { icon = "", hl = "@constant" },
-    Object = { icon = "⦿", hl = "@type" },
-    Key = { icon = "🔐", hl = "@type" },
-    Null = { icon = "NULL", hl = "@type" },
-    EnumMember = { icon = "", hl = "@field" },
-    Struct = { icon = "𝓢", hl = "@type" },
-    Event = { icon = "🗲", hl = "@type" },
-    Operator = { icon = "+", hl = "@operator" },
-    TypeParameter = { icon = "𝙏", hl = "@parameter" },
-    Component = { icon = "", hl = "@function" },
-    Fragment = { icon = "", hl = "@constant" },
+    -- Filter by kinds (string) for symbols in the outline.
+    -- Possible kinds are the Keys in the icons table below.
+    -- A filter list is a string[] with an optional exclude (boolean) field.
+    -- The symbols.filter option takes either a filter list or ft:filterList
+    -- key-value pairs.
+    -- Put  exclude=true  in the string list to filter by excluding the list of
+    -- kinds instead.
+    -- Include all except String and Constant:
+    --   filter = { 'String', 'Constant', exclude = true }
+    -- Only include Package, Module, and Function:
+    --   filter = { 'Package', 'Module', 'Function' }
+    -- See more examples below.
+    filter = nil,
+
+    -- You can use a custom function that returns the icon for each symbol kind.
+    -- This function takes a kind (string) as parameter and should return an
+    -- icon as string.
+    icon_fetcher = nil,
+    -- 3rd party source for fetching icons. Fallback if icon_fetcher returned
+    -- empty string. Currently supported values: 'lspkind'
+    icon_source = nil,
+    -- The next fallback if both icon_fetcher and icon_source has failed, is
+    -- the custom mapping of icons specified below. The icons table is also
+    -- needed for specifying hl group.
+    icons = {
+      File = { icon = '', hl = 'Identifier' },
+      Module = { icon = '', hl = 'Include' },
+      Namespace = { icon = '󰅪', hl = 'Include' },
+      Package = { icon = '󰏗', hl = 'Include' },
+      Class = { icon = '𝓒', hl = 'Type' },
+      Method = { icon = 'ƒ', hl = 'Function' },
+      Property = { icon = '', hl = 'Identifier' },
+      Field = { icon = '󰆨', hl = 'Identifier' },
+      Constructor = { icon = '', hl = 'Special' },
+      Enum = { icon = 'ℰ', hl = 'Type' },
+      Interface = { icon = '󰜰', hl = 'Type' },
+      Function = { icon = '', hl = 'Function' },
+      Variable = { icon = '', hl = 'Constant' },
+      Constant = { icon = '', hl = 'Constant' },
+      String = { icon = '𝓐', hl = 'String' },
+      Number = { icon = '#', hl = 'Number' },
+      Boolean = { icon = '⊨', hl = 'Boolean' },
+      Array = { icon = '󰅪', hl = 'Constant' },
+      Object = { icon = '⦿', hl = 'Type' },
+      Key = { icon = '🔐', hl = 'Type' },
+      Null = { icon = 'NULL', hl = 'Type' },
+      EnumMember = { icon = '', hl = 'Identifier' },
+      Struct = { icon = '𝓢', hl = 'Structure' },
+      Event = { icon = '🗲', hl = 'Type' },
+      Operator = { icon = '+', hl = 'Identifier' },
+      TypeParameter = { icon = '𝙏', hl = 'Identifier' },
+      Component = { icon = '󰅴', hl = 'Function' },
+      Fragment = { icon = '󰅴', hl = 'Constant' },
+      TypeAlias = { icon = ' ', hl = 'Type' },
+      Parameter = { icon = ' ', hl = 'Identifier' },
+      StaticMethod = { icon = ' ', hl = 'Function' },
+      Macro = { icon = ' ', hl = 'Function' },
+    },
   },
-}
-require("symbols-outline").setup(opts)
+})
 EOF
 
 
@@ -626,10 +921,44 @@ require('gitsigns').setup {
     row = 0,
     col = 1
   },
-  yadm = {
-    enable = false
-  },
 }
+EOF
+
+" =================== hover ===============================
+lua << EOF
+
+require("hover").setup {
+  init = function()
+      -- Require providers
+      require("hover.providers.lsp")
+      -- require('hover.providers.gh')
+      -- require('hover.providers.gh_user')
+      -- require('hover.providers.jira')
+      -- require('hover.providers.man')
+      -- require('hover.providers.dictionary')
+  end,
+  preview_opts = {
+      border = 'single'
+  },
+  -- Whether the contents of a currently open hover window should be moved
+  -- to a :h preview-window when pressing the hover keymap.
+  preview_window = false,
+  title = true,
+  mouse_providers = {
+      'LSP'
+  },
+  mouse_delay = 1000
+}
+
+-- Setup keymaps
+-- vim.keymap.set("n", "K", require("hover").hover, {desc = "hover.nvim"})
+-- vim.keymap.set("n", "gK", require("hover").hover_select, {desc = "hover.nvim (select)"})
+-- vim.keymap.set("n", "<C-p>", function() require("hover").hover_switch("previous") end, {desc = "hover.nvim (previous source)"})
+-- vim.keymap.set("n", "<C-n>", function() require("hover").hover_switch("next") end, {desc = "hover.nvim (next source)"})
+
+-- Mouse support
+vim.keymap.set('n', '<MouseMove>', require('hover').hover_mouse, { desc = "hover.nvim (mouse)" })
+vim.o.mousemoveevent = true
 EOF
 
 
@@ -876,10 +1205,18 @@ require"octo".setup({
   right_bubble_delimiter = "";            -- Bubble delimiter
   left_bubble_delimiter = "";             -- Bubble delimiter
   github_hostname = "";                    -- GitHub Enterprise host
+  gh_env = {
+      http_proxy = vim.env.http_proxy,
+      https_proxy = vim.env.https_proxy,
+      no_proxy = vim.env.no_proxy,
+  };
   snippet_context_lines = 4;               -- number or lines around commented lines
   file_panel = {
     size = 10,                             -- changed files panel rows
     use_icons = true                       -- use web-devicons in file panel
+  },
+   suppress_missing_scope = {
+    projects_v2 = true,
   },
   mappings = {
     issue = {
@@ -1018,13 +1355,51 @@ else
 endif
 
 
-" =================== tsserver =============================
+" =================== ts_ls ================================
 if executable('tsserver')
 lua << EOF
-require'lspconfig'.tsserver.setup{}
+require'lspconfig'.ts_ls.setup{}
 EOF
 else
   echo "You might want to install tsserver: yarn global add typescript typescript-language-server"
+endif
+
+
+" =================== yaml-language-server =================
+if executable('yaml-language-server')
+lua << EOF
+require'lspconfig'.yamlls.setup{}
+EOF
+else
+  echo "You might want to install yaml-language-server"
+endif
+
+
+" =================== json-language-server =================
+if executable('vscode-json-language-server')
+lua << EOF
+
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+require'lspconfig'.jsonls.setup{
+  capabilities = capabilities,
+  settings = {
+    json = {
+     schemas = {
+       {
+         description = 'BBDS JSON schema',
+         fileMatch = { 'com.bloomberg.*.json' },
+         url = vim.env.HOME ..  '/bbgithub.com/jmullins31/bbds-local/.vscode/bbds-json-schema.json',
+       },
+     },
+     validate = { enable = true },
+    }
+  }
+}
+EOF
+else
+  echo "You might want to install vscode-json-language-server"
 endif
 
 
@@ -1200,7 +1575,7 @@ cmp.setup ({
     { name = 'vsnip' },
     { name = 'path' },
     { name = 'buffer' },
-    { name = 'cmdline' },
+    --{ name = 'cmdline' },
     { name = 'spell' },
   },
 })
@@ -1212,7 +1587,7 @@ vim.opt.spelllang = { 'en_us' }
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 -- Enable some language servers with the additional completion capabilities offered by nvim-cmp
-local servers = { 'clangd', 'pyright', 'rust_analyzer', 'tsserver' }
+local servers = { 'clangd', 'pyright', 'rust_analyzer', 'ts_ls', 'yamlls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     capabilities = capabilities,
@@ -1337,21 +1712,149 @@ require'lsp_signature'.setup(cfg) -- no need to specify bufnr if you don't use t
 EOF
 
 
+" =================== dap-ui ===============================
+lua << EOF
+require('dapui').setup {
+}
+
+-- automatically open and close dap-ui
+--local dap, dapui = require("dap"), require("dapui")
+--dap.listeners.before.attach.dapui_config = function()
+--  dapui.open()
+--end
+--dap.listeners.before.launch.dapui_config = function()
+--  dapui.open()
+--end
+--dap.listeners.before.event_terminated.dapui_config = function()
+--  dapui.close()
+--end
+--dap.listeners.before.event_exited.dapui_config = function()
+--  dapui.close()
+--end
+EOF
+
+" =================== nvim-ide ============================
+lua << EOF
+local bufferlist      = require('ide.components.bufferlist')
+local explorer        = require('ide.components.explorer')
+local outline         = require('ide.components.outline')
+local callhierarchy   = require('ide.components.callhierarchy')
+local timeline        = require('ide.components.timeline')
+local terminal        = require('ide.components.terminal')
+local terminalbrowser = require('ide.components.terminal.terminalbrowser')
+local changes         = require('ide.components.changes')
+local commits         = require('ide.components.commits')
+local branches        = require('ide.components.branches')
+local bookmarks       = require('ide.components.bookmarks')
+
+require('ide').setup({
+    -- The global icon set to use.
+    -- values: "nerd", "codicon", "default"
+    icon_set = "default",
+    -- Set the log level for nvim-ide's log. Log can be accessed with
+    -- 'Workspace OpenLog'. Values are 'debug', 'warn', 'info', 'error'
+    log_level = "info",
+    -- Component specific configurations and default config overrides.
+    components = {
+        -- The global keymap is applied to all Components before construction.
+        -- It allows common keymaps such as "hide" to be overridden, without having
+        -- to make an override entry for all Components.
+        --
+        -- If a more specific keymap override is defined for a specific Component
+        -- this takes precedence.
+        global_keymaps = {
+            -- example, change all Component's hide keymap to "h"
+            -- hide = h
+        },
+        -- example, prefer "x" for hide only for Explorer component.
+        -- Explorer = {
+        --     keymaps = {
+        --         hide = "x",
+        --     }
+        -- }
+    },
+    -- default panel groups to display on left and right.
+    panels = {
+        left = "explorer",
+        right = "git"
+    },
+    -- panels defined by groups of components, user is free to redefine the defaults
+    -- and/or add additional.
+    panel_groups = {
+        explorer = { outline.Name, bufferlist.Name, explorer.Name, bookmarks.Name, callhierarchy.Name, terminalbrowser.Name },
+        terminal = { terminal.Name },
+        git = { changes.Name, commits.Name, timeline.Name, branches.Name }
+    },
+    -- workspaces config
+    workspaces = {
+        -- which panels to open by default, one of: 'left', 'right', 'both', 'none'
+        auto_open = 'none',
+    },
+    -- default panel sizes for the different positions
+    panel_sizes = {
+        left = 45,
+        right = 45,
+        bottom = 15
+    }
+})
+EOF
+
+
+" =================== neogen ===============================
+lua << EOF
+require('neogen').setup {
+    enabled = true,
+    input_after_comment = true,
+    --snippet_engine = 'vsnip'
+}
+EOF
+
+
+" =================== nvim-lint ============================
+lua << EOF
+require('lint').linters_by_ft = {
+  yaml = {'yamllint',},
+  groovy = {'npm-groovy-lint',},
+}
+EOF
+
+" lint on save
+au BufWritePost * lua require('lint').try_lint()
+
+
 " =================== nvim-jdtls ===========================
 lua << EOF
 function nvim_jdtls_setup()
-  -- if we're not in a normal buffer return
-  if vim.api.nvim_buf_get_option(0, 'buftype') ~= "" then
-      return
-  end
+  -- run 'mvn eclipse:eclipse -DdownloadSources' to bootstrap project
 
-  -- if we can't resolve a root directory return
+  -- if we're not in a normal buffer return
+  --local buffer_type = vim.api.nvim_buf_get_option(0, 'buftype')
+  --if buffer_type ~= "" then
+  --    vim.notify("jdtls disabled for non-normal buffer: " .. buffer_type, vim.log.levels.WARN)
+  --    return
+  --end
+
+  local project_name = "default"
   local root_dir = require('jdtls.setup').find_root({'.git'})
   if (root_dir == nil) then
-      return
+      vim.notify("jdtls using default project name: " .. project_name, vim.log.levels.WARN)
+  else
+    project_name = string.gsub(root_dir, "(.*/)(.*)", "%2")
   end
-  local project_name = string.gsub(root_dir, "(.*/)(.*)", "%2")
+
   local workspace_dir = vim.env.HOME .. "/workspace/" .. project_name
+
+  local extendedClientCapabilities = require'jdtls'.extendedClientCapabilities
+  extendedClientCapabilities.resolveAdditionalTextEditsSupport = true
+
+  local bundles = {
+    vim.fn.glob(vim.env.HOME .. '/github.com/microsoft/java-debug/com.microsoft.java.debug.plugin/target/com.microsoft.java.debug.plugin-*.jar')
+  }
+  vim.list_extend(bundles, vim.split(vim.fn.glob(vim.env.HOME .. '/github.com/microsoft/vscode-java-test/server/*.jar', 1), "\n"))
+
+  --for _, bundle in ipairs(bundles) do
+  --  vim.notify("found jdtls bundle: " .. bundle, vim.log.levels.INFO)
+  --end
 
   -- See `:help vim.lsp.start_client` for config options
   local config = {
@@ -1373,21 +1876,35 @@ function nvim_jdtls_setup()
       '-configuration', vim.env.HOME .. '/.local/install/jdtls/config_linux',
       '-data', workspace_dir
     },
+
     root_dir = root_dir,
     -- For settings see:
     -- https://github.com/mfussenegger/nvim-jdtls
     -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
     -- https://github.com/eclipse/eclipse.jdt.ls/blob/master/org.eclipse.jdt.ls.core/src/org/eclipse/jdt/ls/core/internal/preferences/Preferences.java
     settings = {
+      capabilities = capabilities,
       java = {
         autobuild = {
-          enabled = false
+          enabled = true
         },
         referencesCodeLens = {
-          enabled = true
+          enabled = false
+        },
+        implementationCodeLens = {
+          enabled = false
         },
         signatureHelp = {
-          enabled = true
+          enabled = true,
+          description = {
+              enabled = true
+          }
+        },
+        inlayHints = {
+          parameterNames= {
+            -- enabled options: literals, all, none
+            enabled = "all"
+          }
         },
         maven = {
           downloadSources = true
@@ -1407,21 +1924,39 @@ function nvim_jdtls_setup()
               path = '/usr/lib/jvm/java-17-openjdk-amd64'
             },
           },
-        },
-        maven = {
-         userSettings = vim.env.HOME .. '/.m2/settings.jdt.xml',
+          maven = {
+           userSettings = vim.env.HOME .. '/.m2/settings.jdt.xml',
+           globalSettings = '/opt/local/install/maven/conf/settings.xml',
+          },
         },
       },
     },
     init_options = {
-      bundles = {}
+      bundles = bundles,
+      extendedClientCapabilities = extendedClientCapabilities,
     },
   }
   require('jdtls').start_or_attach(config)
   require('jdtls.setup').add_commands()
+  require('jdtls').setup_dap({
+    hotcodereplace = 'auto',
+    -- These will be used as default overrides for jdtls.dap.test_class, jdtls.dap.test_nearest_method, and discovered main classes
+    -- https://github.com/mfussenegger/nvim-jdtls/blob/master/lua/jdtls/dap.lua#L716C11-L716C168
+    config_overrides = {
+        vmArgs = vim.env.TEST_OPTS,
+        env = {
+            IAM_IDENTITY = vim.env.IAM_IDENTITY
+        }
+    }
+  })
+
+  -- Commands below are unreliable sinece jdtls must be fully loaded
+  -- so instead use :JdtUpdateDebugConfig and DapLoadLaunchJson
+  --require('jdtls.dap').setup_dap_main_class_configs()
+  --require('dap.ext.vscode').load_launchjs()
+
 end
 EOF
-
 
 augroup nvim_jdtls
     au!
