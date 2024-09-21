@@ -8,7 +8,7 @@ Plug 'kyazdani42/nvim-web-devicons'
 Plug 'echasnovski/mini.icons'
 Plug 'ChristianChiarulli/neovim-codicons'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
+Plug 'akinsho/bufferline.nvim', { 'tag': '*' }
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'kyazdani42/nvim-tree.lua'
 Plug 'nvim-telescope/telescope.nvim'
@@ -45,7 +45,7 @@ Plug 'f3fora/cmp-spell'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'rafamadriz/friendly-snippets'
-Plug 'arkav/lualine-lsp-progress'
+"Plug 'arkav/lualine-lsp-progress'
 Plug 'simrat39/rust-tools.nvim'
 Plug 'mfussenegger/nvim-jdtls'
 Plug 'mfussenegger/nvim-lint'
@@ -331,6 +331,7 @@ local config = {
   sections = {
     lualine_a = {'mode'},
     lualine_b = {'branch', 'diff', 'diagnostics'},
+    lualine_b = {'branch'},
     lualine_c = {'filename'},
     lualine_x = {'encoding', 'fileformat', 'filetype'},
     lualine_y = {'progress'},
@@ -1872,7 +1873,7 @@ function nvim_jdtls_setup()
       '--add-modules=ALL-SYSTEM',
       '--add-opens', 'java.base/java.util=ALL-UNNAMED',
       '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-      '-jar', vim.env.HOME .. '/.local/install/jdtls/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar',
+      '-jar', vim.env.HOME .. '/.local/install/jdtls/plugins/org.eclipse.equinox.launcher_1.6.700.v20231214-2017.jar',
       '-configuration', vim.env.HOME .. '/.local/install/jdtls/config_linux',
       '-data', workspace_dir
     },
